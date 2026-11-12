@@ -90,6 +90,7 @@ private fun MainActivity.widgetFrame(id: String): View {
             edit -> rounded(Pal.surface, 22, Pal.mix(Pal.surface, Pal.muted, .6f), 2, dash = true)
             else -> rounded(Pal.surface, 22, Pal.line, 1)
         }
+        if (edit) setPadding(paddingLeft, paddingTop, px(62), paddingBottom)
     }
     val frame = FrameLayout(this)
     frame.addView(card, FrameLayout.LayoutParams(MATCH, MATCH))
@@ -191,7 +192,7 @@ fun MainActivity.widget(id: String): LinearLayout = when (id) {
         })
     }
     "maint" -> box {
-        addView(head("Entretien", R.drawable.ic_wrench, tv("${Store.nf(st.odo)} km", 15, Pal.fg, 500)))
+        addView(head("Entretien", R.drawable.ic_wrench, tv(if (st.odo > 0) "${Store.nf(st.odo)} km" else "km à saisir", 15, if (st.odo > 0) Pal.fg else Pal.muted, 500)))
         val list = st.items.map { it to st.due(it) }.sortedByDescending { it.second.r + if (it.second.lv < 0) -1f else 0f }.take(3)
         addView(grow(col {
             gravity = Gravity.CENTER_VERTICAL
@@ -283,7 +284,7 @@ private fun MainActivity.carWidget() = box {
         addView(label("Ma Clio"))
         addView(plateView(st.plate))
         addView(View(context), lp(0, 1, 1f))
-        addView(tv("${Store.nf(st.odo)} km", 15, Pal.fg, 500))
+        addView(tv(if (st.odo > 0) "${Store.nf(st.odo)} km" else "km à saisir", 15, if (st.odo > 0) Pal.fg else Pal.muted, 500))
     })
     val photo = File(filesDir, "car.jpg")
     val body: View = when {

@@ -201,7 +201,7 @@ class MainActivity : Activity() {
                 gravity = Gravity.CENTER
                 if (cp) background = rounded(Pal.accent, 20) else if (on) background = rounded(Pal.surface2, 20)
                 addView(icon(res, if (cp) (if (small) 36 else 44) else (if (small) 30 else 36), fg))
-                if (!iconOnly) addView(tv(text, if (cp) 16 else if (small) 13 else 15, fg, 600, 1))
+                if (!iconOnly) addView(tv(text, if (cp) 16 else if (small) 13 else 15, fg, 600, 1).apply { gravity = Gravity.CENTER_HORIZONTAL })
                 onTap(onClick)
             }, LinearLayout.LayoutParams(w, px(h)))
         }
