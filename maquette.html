@@ -1,0 +1,772 @@
+<title>Clio Home</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: dark bench page showing the 1280x720 head-unit screen scaled to fit, simulator controls underneath */
+:root{
+  --page:#0D0F12; --page-fg:#E6E8EB; --page-muted:#9198A2; --page-line:#252A31; --page-card:#15181D; --page-btn:#1E2228;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:dark;
+}
+html,body{background:var(--page);color:var(--page-fg);font-family:var(--font)}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px;display:flex;flex-direction:column;gap:20px}
+.top h1{font-size:22px;font-weight:600;margin:0;letter-spacing:-.01em}
+.top p{margin:6px 0 0;color:var(--page-muted);max-width:75ch;line-height:1.55;font-size:14px}
+.stage{position:relative;width:100%}
+.panels{display:grid;grid-template-columns:1fr 1.4fr;gap:16px}
+@media (max-width:820px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--page-card);border:1px solid var(--page-line);border-radius:14px;padding:18px 20px;min-width:0}
+.panel h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--page-muted);margin:0 0 12px;font-weight:600}
+.panel ul{margin:0;padding-left:18px;line-height:1.6;font-size:14px;color:var(--page-fg)}
+.panel li+li{margin-top:4px}
+.panel li span{color:var(--page-muted)}
+.sim{display:flex;flex-wrap:wrap;gap:8px}
+.sim button{font:500 14px var(--font);color:var(--page-fg);background:var(--page-btn);border:1px solid var(--page-line);border-radius:10px;padding:10px 14px;cursor:pointer}
+.sim button:hover{border-color:#3A4049}
+.sim button.on{border-color:#6EA8FE;color:#fff;background:#1F3354}
+.sim button:focus-visible,.device button:focus-visible{outline:2px solid #6EA8FE;outline-offset:2px}
+
+/* ===== Head unit (its own day/night theme, driven by JS) ===== */
+.device{
+  --accent:#0A84FF; --bg:#0B0D10; --fg:#F2F4F7; --muted:#8B929C; --surface:rgba(255,255,255,.065); --surface2:rgba(255,255,255,.11);
+  --line:rgba(255,255,255,.06); --side:rgba(0,0,0,.25); --ok:#30D158; --warn:#FF9F0A; --bad:#FF453A; --onaccent:#fff;
+  position:absolute;top:0;left:0;width:1280px;height:720px;transform-origin:0 0;
+  background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;
+  display:grid;grid-template-columns:140px 1fr;overflow:hidden;container-type:size;container-name:dev;border-radius:4px;
+  box-shadow:0 0 0 12px #000,0 0 0 13px #2A2E35;user-select:none;-webkit-user-select:none;
+}
+.device button{font-family:inherit;color:inherit;cursor:pointer}
+.device svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+.side{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;background:var(--side)}
+.nav{width:118px;height:84px;border-radius:20px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--muted);font-size:15px;font-weight:600}
+.nav svg{width:36px;height:36px}
+.nav.on{color:var(--fg);background:var(--surface2)}
+.nav.cp{background:var(--accent);color:var(--onaccent);height:104px;margin-bottom:6px;font-size:16px}
+.nav.cp svg{width:44px;height:44px}
+.side .fill{flex:1}
+
+.main{position:relative;display:flex;flex-direction:column;gap:14px;padding:14px 20px 20px 16px;min-width:0;min-height:0}
+.status{height:38px;display:flex;align-items:center;gap:20px;flex:none}
+.status .ttl{font-size:21px;font-weight:600;flex:1;letter-spacing:-.01em}
+.st{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:15px;font-variant-numeric:tabular-nums}
+.st svg{width:22px;height:22px}
+.st.off{opacity:.35}
+.st.time{color:var(--fg);font-weight:600;font-size:18px}
+.ibtn{border:0;background:var(--surface);height:38px;padding:0 14px;border-radius:12px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--fg)}
+.ibtn svg{width:20px;height:20px}
+.ibtn.acc{background:var(--accent);color:var(--onaccent)}
+
+.screen{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:14px;grid-auto-flow:dense}
+.w{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px 22px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-width:0;min-height:0;position:relative;overflow:hidden}
+.w.s2{grid-column:span 2}
+.w{container-type:size}
+.w.tap{cursor:pointer}
+.lbl{font-size:12.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.lbl svg{width:18px;height:18px}
+.grid.edit .lbl{padding-right:40px}
+[hidden]{display:none!important}
+/* responsive: adapts to the screen size and to the interface size setting */
+@container dev (max-height:640px){
+  .side{gap:3px;padding:8px 0}
+  .nav{height:66px;font-size:13px;gap:4px}.nav svg{width:30px;height:30px}
+  .nav.cp{height:80px}.nav.cp svg{width:36px;height:36px}
+}
+@container dev (max-height:540px){
+  .nav{height:56px}.nav span{display:none}.nav.cp{height:64px}
+  .main{gap:10px;padding:10px 14px 12px 12px}.screen{gap:10px}
+}
+@container dev (max-width:1060px){
+  .device{grid-template-columns:112px 1fr}
+  .nav{width:96px}
+  [data-dshort]{display:none}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(230px,auto);overflow:auto}
+  .cols{grid-template-columns:1fr;grid-auto-rows:minmax(440px,auto);overflow:auto}
+  .sets{grid-template-columns:1fr}
+  .apps{grid-template-columns:repeat(4,1fr)}
+  .stats{grid-template-columns:1fr 1fr 1fr}
+}
+@container dev (min-width:1600px){
+  .apps{grid-template-columns:repeat(8,1fr)}
+}
+.carimg{flex:1 1 0;min-height:0;border-radius:16px;overflow:hidden;background:var(--surface2);cursor:pointer}
+.carimg img{width:100%;height:100%;object-fit:cover;display:block}
+.device .carph{flex:1 1 0;min-height:0;border:2px dashed color-mix(in srgb,var(--muted) 45%,transparent);border-radius:16px;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:15px;font-weight:500}
+.carph svg{width:min(240px,70%);max-height:50%;height:auto;stroke-width:2.5;opacity:.8}
+.carfoot{display:flex;align-items:center;gap:12px}
+.device .sbtn{position:absolute;right:10px;width:64px;height:64px;border-radius:20px;border:0;background:var(--accent);color:var(--onaccent);display:flex;align-items:center;justify-content:center;z-index:3;box-shadow:0 4px 14px rgba(0,0,0,.22)}
+.sbtn svg{width:34px;height:34px;stroke-width:2.4}
+.device .sbtn:disabled{background:var(--surface2);color:var(--muted);box-shadow:none;cursor:default}
+.carname{flex:1 1 0;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:10px;padding-left:4px}
+.carname .cn{font-size:76px;font-weight:600;letter-spacing:-.035em;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow{display:grid;grid-template-columns:104px 30px minmax(0,1fr) 110px 80px 44px;gap:12px;align-items:center;padding:12px 8px;font-size:15px;font-variant-numeric:tabular-nums}
+.lrow+.lrow{border-top:1px solid var(--line)}
+.lrow.head{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:0}
+.lrow .tp{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--accent)}
+.lrow .tp svg{width:17px;height:17px}
+.lrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.lrow .nm small{display:block;color:var(--muted);font-weight:400;font-size:13px;overflow:hidden;text-overflow:ellipsis}
+.lrow .rt{text-align:right}
+.lrow .del{width:40px;height:40px;border-radius:12px;border:0;background:none;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.lrow .del svg{width:18px;height:18px}
+.lrow .del.arm{background:var(--bad);color:#fff}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:var(--surface2);border-radius:14px;padding:12px 14px}
+.stat b{display:block;font-size:24px;font-weight:400;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat span{font-size:12.5px;color:var(--muted)}
+.csv{flex:1;min-height:0;resize:none;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--fg);background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px;white-space:pre;overflow:auto;user-select:text;-webkit-user-select:text}
+.plate{display:inline-flex;align-items:stretch;height:28px;border-radius:5px;border:1.5px solid #1a1a1a;background:#fff;color:#111;overflow:hidden;letter-spacing:.08em;text-transform:uppercase;margin-left:12px}
+.plate .eu,.plate .rg{background:#1D4FB8;color:#fff;width:16px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:10px;font-weight:700;letter-spacing:0}
+.plate .rg{width:12px}
+.plate .n{padding:0 9px;display:flex;align-items:center;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+.lbl .r{margin-left:auto;letter-spacing:0;text-transform:none;font-size:14px;color:var(--fg);font-weight:500;font-variant-numeric:tabular-nums}
+.tag{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:6px;padding:2px 6px}
+.big{font-size:min(var(--fs,64px),36cqh,var(--cw,36cqw));font-weight:300;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.unit{font-size:20px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:6px}
+.sub{color:var(--muted);font-size:15px;line-height:1.35}
+.sub b{color:var(--fg);font-weight:500}
+.bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--ok)}
+.bar i.warn{background:var(--warn)} .bar i.bad{background:var(--bad)}
+.pill{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.pill.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,transparent)}
+
+.mrow{display:flex;flex-direction:column;gap:7px}
+.mrow .h{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500}
+.mrow .h .pill{margin-left:auto}
+.volrow{display:flex;align-items:center;gap:10px}
+.volrow .bar{flex:1;height:8px;border-radius:4px}
+.volrow .bar i{background:var(--accent)}
+.rbtn{width:46px;height:46px;border-radius:14px;border:0;background:var(--surface2);display:flex;align-items:center;justify-content:center}
+.rbtn svg{width:22px;height:22px}
+
+/* edit mode */
+.grid.edit .w{border:2px dashed color-mix(in srgb,var(--muted) 60%,transparent);cursor:pointer}
+.grid.edit .w.sel{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+.hidebtn{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;z-index:2}
+.hidebtn svg{width:18px;height:18px}
+.tray{flex:none;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px 12px 10px 18px;min-height:62px}
+.tray .t{color:var(--muted);font-size:14px;margin-right:6px;white-space:nowrap}
+.chip{white-space:nowrap;border:0;background:var(--surface2);border-radius:12px;height:40px;padding:0 14px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.chip svg{width:18px;height:18px}
+.chip.on{background:var(--accent);color:var(--onaccent)}
+.tray .fill{flex:1}
+
+/* lists & panels */
+.cols{flex:1;min-height:0;display:grid;grid-template-columns:1.45fr 1fr;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px 20px;min-height:0;display:flex;flex-direction:column;gap:12px}
+.scroll{overflow:auto;min-height:0;flex:1;scrollbar-width:thin}
+.list{display:flex;flex-direction:column}
+.li{display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:center;padding:14px 12px;border-radius:14px;cursor:pointer;border:0;background:none;text-align:left;width:100%;box-sizing:border-box}
+.li+.li{border-top:1px solid var(--line)}
+.li.sel{background:var(--surface2)}
+.li .n{font-size:17px;font-weight:500}
+.li .d{font-size:14px;color:var(--muted)}
+.li .bar{grid-column:1 / -1}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:500}
+.field input,.field select{font:500 17px var(--font);color:var(--fg);background:var(--surface2);border:1px solid var(--line);border-radius:12px;height:46px;padding:0 14px;width:100%;box-sizing:border-box;color-scheme:inherit}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.field input{min-width:0}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;height:46px;padding:0 18px;font-size:15px;font-weight:600;background:var(--surface2);display:flex;align-items:center;gap:8px}
+.btn svg{width:20px;height:20px}
+.btn.acc{background:var(--accent);color:var(--onaccent)}
+.btn.danger{color:var(--bad)}
+.btn.danger.arm{background:var(--bad);color:#fff}
+.odo{display:flex;align-items:flex-end;gap:12px}
+.odo .field{flex:1}
+.note{font-size:13px;color:var(--muted);line-height:1.45}
+
+.price{white-space:nowrap;text-align:right;font-size:30px;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.price small{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px;letter-spacing:0}
+.seg{display:inline-flex;background:var(--surface2);border-radius:12px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;height:38px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:500;color:var(--muted)}
+.seg button.on{background:var(--accent);color:var(--onaccent)}
+
+.radio{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+.freq{font-size:140px;font-weight:200;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
+.freq small{font-size:28px;color:var(--muted);font-weight:500;letter-spacing:0;margin-left:10px}
+.rctl{display:flex;align-items:center;gap:16px}
+.rctl .rbtn{width:70px;height:70px;border-radius:22px}
+.rctl .rbtn svg{width:30px;height:30px}
+.presets{display:flex;gap:10px}
+.presets .chip{height:48px;padding:0 20px;font-size:16px;font-variant-numeric:tabular-nums}
+
+.apps{display:grid;grid-template-columns:repeat(6,1fr);gap:22px 14px;align-content:start}
+.app{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:14px;font-weight:500;padding:8px 0;border-radius:16px}
+.app .ico{width:76px;height:76px;border-radius:20px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.app .ico svg{width:34px;height:34px}
+
+.sets{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.srow{display:flex;flex-direction:column;gap:10px}
+.srow + .srow{border-top:1px solid var(--line);padding-top:14px}
+.srow .k{font-size:16px;font-weight:500}
+.srow .k small{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:3px;line-height:1.4}
+.sw{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.swatch{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);padding:0}
+.swatch.on{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--fg)}
+.swatch.sq{border-radius:12px}
+.cpick{width:40px;height:40px;border-radius:12px;border:2px dashed var(--muted);background:none;padding:0;cursor:pointer}
+.tgl{display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:none;width:100%;padding:0;text-align:left;font-size:16px;font-weight:500}
+.tgl .s{width:52px;height:32px;border-radius:16px;background:var(--surface2);position:relative;flex:none}
+.tgl .s::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tgl.on .s{background:var(--accent)}
+.tgl.on .s::after{left:23px}
+
+.cplay{flex:1;display:flex;align-items:center;justify-content:center}
+.cplay .box{max-width:560px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px}
+.cplay .ring{width:120px;height:120px;border-radius:32px;background:var(--accent);color:var(--onaccent);display:flex;align-items:center;justify-content:center}
+.cplay .ring svg{width:60px;height:60px}
+.cplay h3{font-size:30px;font-weight:600;margin:0}
+.cplay p{margin:0;color:var(--muted);line-height:1.5;font-size:16px}
+
+.banner{position:absolute;top:66px;left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:14px;background:var(--fg);color:var(--bg);border-radius:18px;padding:10px 10px 10px 20px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:16px;font-weight:500;white-space:nowrap}
+.banner .btn{height:42px;background:color-mix(in srgb,var(--bg) 14%,transparent);color:var(--bg)}
+.banner .btn.acc{background:var(--accent);color:var(--onaccent)}
+.toast{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:6;background:var(--fg);color:var(--bg);border-radius:14px;padding:12px 20px;font-size:16px;font-weight:500;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.toast svg{width:20px;height:20px}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <h1>Clio Home · maquette interactive</h1>
+    <p>Écran d'accueil prévu pour l'autoradio AWESAFE PX9 (1280×720, 2 Go) de la Clio 4. Tout se touche : barre latérale, widgets, entretien, réglages. Pour réorganiser l'accueil, faites un appui long sur un widget ou touchez « Modifier ». Vos réglages sont gardés dans ce navigateur.</p>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="device" id="dev">
+      <nav class="side" id="side"></nav>
+      <div class="main">
+        <div class="status" id="status"></div>
+        <div class="screen" id="screen"></div>
+        <div class="banner" id="banner" hidden></div>
+        <div class="toast" id="toast" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <h2>Simuler la voiture</h2>
+      <div class="sim">
+        <button id="s-phone" type="button">Connecter l'iPhone</button>
+        <button id="s-lights" type="button">Allumer les phares</button>
+        <button id="s-vdown" type="button">Volant : volume −</button>
+        <button id="s-vup" type="button">Volant : volume +</button>
+        <button id="s-boot" type="button">Démarrer la voiture</button>
+        <button id="s-net" type="button">Couper Internet</button>
+      </div>
+      <h2 style="margin-top:18px">Tester une autre taille d'écran</h2>
+      <div class="sim" id="res">
+        <button type="button" data-res="1024x600">1024 × 600</button>
+        <button type="button" data-res="1280x720" class="on">1280 × 720 (le vôtre)</button>
+        <button type="button" data-res="1920x720">1920 × 720</button>
+        <button type="button" data-res="1280x800">1280 × 800</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Ce qui est simulé ici, et ce que fera la vraie appli</h2>
+      <ul>
+        <li>CarPlay : ouvre <b>ZLink</b> en plein écran. <span>Le bouton Accueil de l'autoradio ramène ensuite sur Clio Home.</span></li>
+        <li>Météo : Open-Meteo, gratuit et sans compte. <span>Les valeurs affichées ici sont des exemples.</span></li>
+        <li>Prix carburant : données officielles prix-carburants.gouv.fr autour de votre position GPS. <span>Les stations affichées sont des exemples.</span></li>
+        <li>Vitesse : récepteur GPS de l'autoradio. <span>Ici elle varie au hasard.</span></li>
+        <li>Phares : l'autoradio reçoit le signal éclairage par le faisceau ou le CAN-bus. <span>On vérifiera ensemble ce que le PX9 expose.</span></li>
+        <li>Hors ligne d'abord : heure, vitesse, températures de la voiture, entretien et stationnement marchent sans Internet. <span>Seuls la météo et les prix du carburant en ont besoin ; ils affichent alors les dernières valeurs connues.</span></li>
+        <li>Pas d'animations : les écrans changent instantanément pour rester fluide avec 2 Go de RAM.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+/* ---------- icons ---------- */
+const I={
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  carplay:'<rect x="3" y="4" width="18" height="13" rx="3"/><path d="M10.2 8.2v4.6l4-2.3z"/><path d="M8 21h8M12 17v4"/>',
+  wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+  fuel:'<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16"/><path d="M3 21h12M4 10h10"/><path d="M14 8h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3"/>',
+  radio:'<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M7 8l10-5"/><circle cx="8" cy="14" r="2.5"/><path d="M14 12h4M14 16h4"/>',
+  grid:'<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',
+  sliders:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  bt:'<path d="M7 7l10 10-5 4V3l5 4L7 17"/>',
+  wifi:'<path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".8"/>',
+  vol:'<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  cloud:'<path d="M7 19a4 4 0 0 1-.6-8A6 6 0 0 1 18 12.2 3.4 3.4 0 0 1 17.6 19z"/><path d="M8 5.5A4 4 0 0 1 14.5 6" opacity=".6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+  prev:'<path d="M15 6l-6 6 6 6"/>', next:'<path d="M9 6l6 6-6 6"/>',
+  gauge:'<path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/>',
+  thermo:'<path d="M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/>',
+  music:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+  folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  image:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/>',
+  film:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4-2.5z"/>',
+  eq:'<path d="M6 20V10M6 6V4M12 20v-4M12 12V4M18 20v-8M18 8V4"/><path d="M4 8h4M10 14h4M16 10h4"/>',
+  download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  android:'<rect x="5" y="9" width="14" height="10" rx="2"/><path d="M8 9a4 4 0 0 1 8 0M8 5l1.5 2M16 5l-1.5 2"/>'
+};
+I.parkP='<rect x="4" y="3" width="16" height="18" rx="3"/><path d="M10 17V7h3a3 3 0 0 1 0 6h-3"/>';I.pin='<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>';I.up='<path d="M6 15l6-6 6 6"/>';I.down='<path d="M6 9l6 6 6-6"/>';
+const ic=(n,cls)=>`<svg viewBox="0 0 24 24"${cls?` class="${cls}"`:''}>${I[n]}</svg>`;
+
+/* ---------- state ---------- */
+const DEF={
+  accent:'#0A84FF', bgDay:'#EEF1F4', bgNight:'#0B0D10', themeMode:'auto',
+  layout:['car','speed','weather','maint','park','fuel'], hidden:['volume','clock','conn'], park:{at:0,limit:60,note:'',auto:true}, carPhoto:'', plate:'EA-846-SL', ui:1.15, uiV:2, carShow:'photo', carName:'Clio 4', carSub:'Phase 2 · 1.5 dCi · 2016',
+  log:[
+    {id:'l1',d:'2026-11-12',km:98450,t:'km',name:'Relevé kilométrique',cost:'',note:''},
+    {id:'l2',d:'2026-09-01',km:96200,t:'km',name:'Relevé kilométrique',cost:'',note:''},
+    {id:'l3',d:'2026-06-15',km:92800,t:'km',name:'Relevé kilométrique',cost:'',note:''},
+    {id:'l4',d:'2026-03-10',km:85000,t:'ent',name:'Vidange + filtre à huile',cost:'89',note:'Huile 5W30'},
+    {id:'l5',d:'2026-03-10',km:85000,t:'ent',name:"Filtre d'habitacle",cost:'25',note:''},
+    {id:'l6',d:'2025-05-22',km:72000,t:'ent',name:'Filtre à air',cost:'30',note:''},
+    {id:'l7',d:'2025-05-22',km:72000,t:'ent',name:'Filtre à gazole',cost:'45',note:''}
+  ],
+  side:{fuel:true,radio:true}, autoCP:'phone', fuelType:'Gazole', fuelSort:'prix',
+  odo:98450, freq:101.1,
+  items:[
+    {id:'vid',name:'Vidange + filtre à huile',km:20000,mo:12,lastKm:85000,lastDate:'2026-03-10'},
+    {id:'hab',name:"Filtre d'habitacle",km:20000,mo:12,lastKm:85000,lastDate:'2026-03-10'},
+    {id:'air',name:'Filtre à air',km:40000,mo:24,lastKm:72000,lastDate:'2025-05-22'},
+    {id:'gaz',name:'Filtre à gazole',km:40000,mo:24,lastKm:72000,lastDate:'2025-05-22'},
+    {id:'frein',name:'Liquide de frein',km:0,mo:24,lastKm:72000,lastDate:'2024-11-20'},
+    {id:'ct',name:'Contrôle technique',km:0,mo:24,lastKm:80000,lastDate:'2024-12-05'},
+    {id:'dist',name:'Courroie de distribution',km:120000,mo:72,lastKm:60000,lastDate:'2022-04-15'}
+  ]
+};
+const KEY='cliohome.v2';
+let S;
+try{ S=Object.assign(JSON.parse(JSON.stringify(DEF)), JSON.parse(localStorage.getItem(KEY)||'{}')); }catch(e){ S=JSON.parse(JSON.stringify(DEF)); }
+if(S.uiV!==2){S.ui=1.15;S.uiV=2;}
+S.layout=S.layout.filter(x=>x!=='temp');S.hidden=S.hidden.filter(x=>x!=='temp');
+if(!S.offV){const a=S.layout.indexOf('fuel'),b=S.layout.indexOf('park');if(a>=0&&b>a){S.layout[a]='park';S.layout[b]='fuel';}S.offV=1;}
+if(!S.layout.includes('park')&&!S.hidden.includes('park')){const i=S.layout.indexOf('volume');if(i>=0){S.layout[i]='park';S.hidden.unshift('volume');}else S.hidden.unshift('park');}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+
+const R={online:true,res:[1280,720],mTab:'due',logPanel:'add',logArm:null,screen:'home',edit:false,sel:null,lights:false,vol:14,speed:47,phone:true,mSel:'vid',delArm:false,cdTimer:null};
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const nf=n=>Number(n).toLocaleString('fr-FR');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+
+function mStatus(it){
+  const t=today(), last=new Date(it.lastDate+'T00:00:00'), due=new Date(last); due.setMonth(due.getMonth()+Number(it.mo||0));
+  let r=0, parts=[];
+  if(it.mo>0){
+    const dl=Math.round((due-t)/864e5), tot=Math.max(1,(due-last)/864e5);
+    r=Math.max(r,1-dl/tot);
+    parts.push(dl<0?`retard ${-dl} j`:dl<=60?`${dl} j`:`${Math.round(dl/30.4)} mois`);
+  }
+  if(it.km>0){
+    const kl=Number(it.lastKm)+Number(it.km)-S.odo;
+    r=Math.max(r,1-kl/it.km);
+    parts.unshift(kl<0?`+${nf(-kl)} km`:`${nf(kl)} km`);
+  }
+  const lv=r>=1?'bad':r>=.9?'warn':'ok';
+  const dueKm=it.km>0?nf(Number(it.lastKm)+Number(it.km))+' km':null;
+  return {r:Math.min(1,Math.max(0,r)),lv,txt:(lv==='bad'?'À faire · ':'')+parts.join(' · '),due:due.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}),dueKm};
+}
+const every=it=>[it.km>0?`${nf(it.km)} km`:null,it.mo>0?`${it.mo} mois`:null].filter(Boolean).join(' ou ');
+
+const STATIONS=[
+  {n:'Intermarché',a:'Route de Lyon',d:2.4,p:0,t:'il y a 3 h'},
+  {n:'E.Leclerc',a:'ZAC des Portes',d:5.1,p:.006,t:'il y a 1 h'},
+  {n:'Total Access',a:'Av. Jean Jaurès',d:1.2,p:.033,t:'il y a 5 h'},
+  {n:'Esso Express',a:'Rue de la Gare',d:3.0,p:.06,t:'hier'},
+  {n:'Station BP',a:'Nationale 7',d:7.8,p:.09,t:'il y a 2 h'}
+];
+const FUEL_BASE={'Gazole':1.679,'SP95-E10':1.749,'SP98':1.819,'E85':.829,'GPLc':.959};
+const price=s=>FUEL_BASE[S.fuelType]+s.p;
+const pf=v=>v.toFixed(3).replace('.',',');
+
+function addLog(e){S.log.push(Object.assign({id:'l'+Date.now()+Math.floor(Math.random()*1000),d:iso(today()),cost:'',note:''},e));}
+function toCSV(){
+  const q=v=>{v=String(v??'');return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const L=[...S.log].sort((a,b)=>b.d.localeCompare(a.d)||b.km-a.km);
+  return ['Date;Kilométrage;Type;Intervention;Coût (€);Note;Plaque'].concat(L.map(e=>[new Date(e.d+'T00:00').toLocaleDateString('fr-FR'),e.km,e.t==='km'?'Relevé':'Entretien',e.name,String(e.cost).replace('.',','),e.note,S.plate].map(q).join(';'))).join('\n');
+}
+
+/* big up/down buttons on every area that can scroll */
+const SCR_SEL='#screen .scroll, #screen .csv, #screen .grid, #screen .cols';
+function addScrollBtns(){
+  document.querySelectorAll('#screen .sbtn').forEach(b=>b.remove());
+  document.querySelectorAll(SCR_SEL).forEach((sc,i)=>{
+    sc.style.paddingRight='';
+    if(sc.scrollHeight<=sc.clientHeight+2)return;
+    const par=sc.parentNode; if(getComputedStyle(par).position==='static')par.style.position='relative';
+    sc.style.paddingRight='78px';
+    const top=sc.offsetTop+6, bot=par.clientHeight-(sc.offsetTop+sc.offsetHeight)+6;
+    const mk=(dir,pos)=>{const b=document.createElement('button');b.type='button';b.className='sbtn';b.dataset.act='scroll';b.dataset.v=i+(dir==='up'?':-1':':1');b.setAttribute('aria-label',dir==='up'?'Monter':'Descendre');b.innerHTML=ic(dir);b.style[pos]=(pos==='top'?top:bot)+'px';par.appendChild(b);return b;};
+    const up=mk('up','top'),dn=mk('down','bottom');
+    const upd=()=>{up.disabled=sc.scrollTop<=1;dn.disabled=sc.scrollTop+sc.clientHeight>=sc.scrollHeight-1;};
+    sc.addEventListener('scroll',upd,{passive:true});upd();
+  });
+}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>addScrollBtns());
+
+/* parking timer */
+const hm=d=>d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+const dur=m=>m>=60?`${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`:`${m} min`;
+function parkInfo(){
+  const p=S.park;if(!p||!p.at)return null;const now=Date.now(),atS=hm(new Date(p.at)),lim=+p.limit||0;
+  if(!lim)return{atS,lim:0,endS:'',big:dur(Math.max(0,Math.floor((now-p.at)/60000))),unit:'écoulées',lv:'ok',r:0};
+  const end=p.at+lim*60000,rem=Math.ceil((end-now)/60000);
+  return{atS,lim,endS:hm(new Date(end)),big:rem<=0?'+'+dur(-rem):dur(rem),unit:rem<=0?'de dépassement':'restantes',lv:rem<=0?'bad':rem<=10?'warn':'ok',r:Math.min(1,Math.max(0,(now-p.at)/(lim*60000)))};
+}
+function parkTick(){
+  const P=parkInfo();
+  document.querySelectorAll('[data-prem]').forEach(e=>{const t=P?P.big:'';if(e.textContent!==t)e.textContent=t;e.style.color=P&&P.lv!=='ok'?`var(--${P.lv})`:'';});
+  document.querySelectorAll('[data-punit]').forEach(e=>{const t=P?P.unit:'';if(e.textContent!==t)e.textContent=t;});
+  document.querySelectorAll('[data-pbar]').forEach(e=>{if(!P)return;e.style.width=Math.round(P.r*100)+'%';e.className=P.lv;});
+}
+const LIMITS=[[0,'Sans limite'],[15,'15 min'],[30,'30 min'],[60,'1 h'],[90,'1 h 30'],[120,'2 h'],[180,'3 h']];
+
+/* ---------- theme ---------- */
+function isNight(){return S.themeMode==='night'||(S.themeMode==='auto'&&R.lights)}
+function applyTheme(){
+  const d=$('dev').style, n=isNight();
+  const T=n?{bg:S.bgNight,fg:'#F2F4F7',muted:'#8B929C',surface:'rgba(255,255,255,.065)',surface2:'rgba(255,255,255,.11)',line:'rgba(255,255,255,.06)',side:'rgba(0,0,0,.25)',ok:'#30D158',warn:'#FF9F0A',bad:'#FF453A'}
+          :{bg:S.bgDay,fg:'#101317',muted:'#5F6670',surface:'rgba(255,255,255,.82)',surface2:'rgba(16,19,23,.07)',line:'rgba(16,19,23,.07)',side:'rgba(255,255,255,.45)',ok:'#1E9E48',warn:'#C77700',bad:'#D92D20'};
+  for(const k in T) d.setProperty('--'+k,T[k]);
+  d.setProperty('--accent',S.accent);
+  d.setProperty('--onaccent',lum(S.accent)>.6?'#101317':'#fff');
+}
+function lum(h){const n=parseInt(h.slice(1),16);const r=n>>16&255,g=n>>8&255,b=n&255;return (0.299*r+0.587*g+0.114*b)/255}
+
+/* ---------- widgets ---------- */
+const CAR_SVG='<svg viewBox="0 0 400 140"><path d="M28 104V84q2-12 16-16l66-9q38-34 92-36h66q30 2 60 34l36 8q14 4 14 18v21z"/><path d="M122 60q30-26 78-28h64q22 2 40 26z"/><path d="M212 32v28"/><circle cx="96" cy="104" r="22"/><circle cx="312" cy="104" r="22"/></svg>';
+const W={
+  car:{t:'Photo voiture',span:2,html:()=>{const top=S.items.map(it=>({it,s:mStatus(it)})).sort((a,b)=>b.s.r-a.s.r)[0];const act=R.edit?'':' data-act="carphoto"';
+    const pic=S.carShow==='name'?`<div class="carname"><div class="cn">${esc(S.carName)}</div><div class="sub" style="font-size:20px">${esc(S.carSub)}</div></div>`:S.carPhoto?`<div class="carimg"${act}><img src="${S.carPhoto}" alt="Photo de ma voiture"></div>`:`<button type="button" class="carph"${act}>${CAR_SVG}Touchez pour ajouter une photo de votre voiture</button>`;
+    return `<div class="lbl">Ma Clio<span class="plate" title="Plaque d'immatriculation"><span class="eu">F</span><span class="n">${esc(S.plate)}</span><span class="rg"></span></span><span class="r">${nf(S.odo)} km</span></div>${pic}<div class="carfoot"><span class="sub" style="font-size:13px">${S.carShow==='name'?'':S.carPhoto?'Touchez la photo pour la changer':'Photo prise de votre galerie'}</span>${top?`<span class="pill ${top.s.lv}" style="margin-left:auto;max-width:260px;overflow:hidden;text-overflow:ellipsis">${top.s.txt} · ${esc(top.it.name)}</span>`:''}</div>`;}},
+  clock:{t:'Heure',span:2,html:()=>`<div class="lbl">Aujourd'hui</div><div><div class="big" style="--fs:132px" data-clock></div><div class="sub" style="font-size:22px;margin-top:10px;color:var(--fg)" data-date></div></div>`},
+  speed:{t:'Vitesse GPS',html:()=>`<div class="lbl">${ic('gauge')}Vitesse GPS</div><div class="big" style="--fs:104px"><span data-speed>${R.speed}</span><span class="unit">km/h</span></div><div class="sub">Signal GPS · 9 satellites</div>`},
+  weather:{t:'Températures',tap:1,html:()=>`<div class="lbl">${ic('thermo')}Températures</div>
+    <div><div class="sub">Extérieur</div><div class="big" style="--fs:80px;--cw:32cqw">8°</div></div>
+    <div class="sub" style="display:flex;flex-direction:column;gap:4px">${R.online?'<div><b>Nuageux</b> · 8° / 14°</div><div style="font-size:13px">Pluie possible vers 17 h</div>':'<div style="font-size:13px">Prévisions météo : hors ligne</div>'}</div>`},
+  maint:{t:'Entretien',span:2,tap:1,html:()=>{
+    const top=S.items.map(it=>({it,s:mStatus(it)})).sort((a,b)=>b.s.r-a.s.r).slice(0,3);
+    return `<div class="lbl">${ic('wrench')}Entretien<span class="r">${nf(S.odo)} km</span></div>`+
+      top.map(({it,s})=>`<div class="mrow"><div class="h">${esc(it.name)}<span class="pill ${s.lv}">${s.txt}</span></div><div class="bar"><i class="${s.lv}" style="width:${Math.round(s.r*100)}%"></i></div></div>`).join('');
+  }},
+  fuel:{t:'Carburant',tap:1,html:()=>{
+    const b=[...STATIONS].sort((a,c)=>a.p-c.p)[0];
+    return `<div class="lbl">${ic('fuel')}${esc(S.fuelType)}<span class="tag" style="margin-left:auto">${R.online?'exemple':'hors ligne'}</span></div><div><div class="sub">${R.online?'Le moins cher':'Derniers prix connus'}</div><div class="big" style="--fs:64px;--cw:21cqw;margin-top:6px">${pf(price(b))}<span class="unit">€/L</span></div><div class="sub" style="font-size:13px;margin-top:8px">Plein de 45 L : <b>${(price(b)*45).toFixed(2).replace('.',',')} €</b></div></div><div class="sub"><b>${b.n}</b> · ${String(b.d).replace('.',',')} km</div>`;
+  }},
+  volume:{t:'Volume',html:()=>`<div class="lbl">${ic('vol')}Volume</div><div class="big" style="--fs:96px"><span data-vol>${R.vol}</span><span class="unit">/ 30</span></div><div class="volrow"><button class="rbtn" type="button" data-act="vol" data-v="-1" aria-label="Baisser le volume">${ic('minus')}</button><div class="bar"><i data-volbar style="width:${R.vol/30*100}%"></i></div><button class="rbtn" type="button" data-act="vol" data-v="1" aria-label="Monter le volume">${ic('plus')}</button></div>`},
+  park:{t:'Stationnement',tap:1,html:()=>{const P=parkInfo(),act=R.edit?'':' data-act="parknow"';
+    if(!P)return `<div class="lbl">${ic('parkP')}Stationnement</div><div class="sub">Notez l'heure d'arrivée et la durée autorisée.</div><button type="button" class="btn acc" style="justify-content:center"${act}>${ic('parkP')}Je me gare</button>`;
+    return `<div class="lbl">${ic('parkP')}Garé à ${P.atS}</div><div><div class="big" style="--fs:56px;--cw:22cqw" data-prem>${P.big}</div><div class="sub" style="margin-top:6px" data-punit>${P.unit}</div></div><div class="sub">${P.endS?`Jusqu'à <b>${P.endS}</b>`:'Sans limite de durée'}</div>${P.lim?`<div class="bar"><i data-pbar class="${P.lv}" style="width:${Math.round(P.r*100)}%"></i></div>`:''}`;}},
+  conn:{t:'Connexions',html:()=>`<div class="lbl">Connexions</div><div class="mrow" style="gap:16px"><div class="h">${ic('bt').replace('<svg','<svg style="width:26px;height:26px;color:var(--accent)"')}Bluetooth<span class="sub" style="margin-left:auto">${R.phone?'iPhone':'aucun'}</span></div><div class="h">${ic('wifi').replace('<svg','<svg style="width:26px;height:26px;color:var(--accent)"')}Wi-Fi<span class="sub" style="margin-left:auto">${R.phone?'Partage iPhone':'déconnecté'}</span></div></div><div class="sub">CarPlay sans fil via ZLink</div>`},
+  _temp:{t:'Temp. extérieure',html:()=>`<div class="lbl">${ic('thermo')}Extérieur<span class="tag" style="margin-left:auto">CAN-bus</span></div><div class="big" style="--fs:104px">8°</div><div class="sub">À confirmer : dépend de ce que le boîtier CAN du PX9 transmet</div>`}
+};
+
+/* ---------- render ---------- */
+const NAV=[['carplay','CarPlay','carplay'],['home','Accueil','home'],['maint','Suivi','wrench'],['fuel','Carburant','fuel'],['radio','Radio','radio'],['_'],['apps','Applis','grid']];
+const TITLES={home:'Accueil',maint:'Suivi',park:'Stationnement',sys:'Système',fuel:'Prix carburant',radio:'Radio',apps:'Applications',settings:'Réglages',carplay:'CarPlay'};
+
+function renderSide(){
+  $('side').innerHTML=NAV.filter(n=>!(n[0]==='fuel'&&!S.side.fuel)&&!(n[0]==='radio'&&!S.side.radio)).map(n=>n[0]==='_'?'<div class="fill"></div>':
+    `<button type="button" class="nav ${n[0]==='carplay'?'cp':''} ${(R.screen===n[0]&&n[0]!=='carplay')||(n[0]==='apps'&&['settings','sys','park'].includes(R.screen))?'on':''}" data-act="go" data-v="${n[0]}">${ic(n[2])}<span>${n[1]}</span></button>`).join('');
+}
+function renderStatus(){
+  const home=R.screen==='home';
+  $('status').innerHTML=`${['settings','sys'].includes(R.screen)?`<button type="button" class="ibtn" data-act="go" data-v="apps">${ic('prev')}Applis</button>`:''}<div class="ttl">${R.edit?'Modifier l\'accueil':TITLES[R.screen]}</div>
+    ${home&&!R.edit?`<button type="button" class="ibtn" data-act="edit">${ic('edit')}Modifier</button>`:''}
+    ${R.edit?`<button type="button" class="ibtn acc" data-act="done">${ic('check')}Terminé</button>`:''}
+    <span class="st ${R.phone?'':'off'}" title="Bluetooth">${ic('bt')}</span>
+    <span class="st ${R.phone&&R.online?'':'off'}" title="Wi-Fi">${ic('wifi')}</span>
+    <span class="st" title="Volume">${ic('vol')}<span data-vol>${R.vol}</span></span>
+    <span class="st" title="Thème">${ic(isNight()?'moon':'sun')}</span>
+    <span class="st" data-dshort></span><span class="st time" data-clock></span>`;
+}
+function renderScreen(){
+  const s=$('screen'), f=SCREENS[R.screen]; s.innerHTML=f(); tick(); addScrollBtns();
+}
+function renderAll(){applyTheme();renderSide();renderStatus();renderScreen();}
+
+const SCREENS={
+  home(){
+    const g=`<div class="grid ${R.edit?'edit':''}" id="grid">${S.layout.map(id=>{const w=W[id];return `<div class="w ${w.span===2?'s2':''} ${w.tap&&!R.edit?'tap':''} ${R.sel===id?'sel':''}" data-w="${id}">${R.edit?`<button type="button" class="hidebtn" data-act="hide" data-v="${id}" aria-label="Masquer ${w.t}">${ic('x')}</button>`:''}${w.html()}</div>`}).join('')}</div>`;
+    const tray=R.edit?`<div class="tray"><span class="t">${R.sel?'Touchez le 2ᵉ widget':'Touchez 2 widgets pour les échanger'}</span>${S.hidden.map(id=>`<button type="button" class="chip" data-act="show" data-v="${id}">${ic('plus')}${W[id].t}</button>`).join('')}<span class="fill"></span><button type="button" class="chip" data-act="reset">Réinitialiser</button></div>`:'';
+    return g+tray;
+  },
+  maint(){
+    const tabs=`<div style="display:flex;align-items:center;gap:12px"><div class="seg"><button type="button" class="${R.mTab==='due'?'on':''}" data-act="mtab" data-v="due">Échéances</button><button type="button" class="${R.mTab==='log'?'on':''}" data-act="mtab" data-v="log">Historique et kilométrage</button></div></div>`;
+    return tabs+(R.mTab==='log'?SCREENS.maintLog():SCREENS.maintDue());
+  },
+  maintLog(){
+    const L=[...S.log].sort((a,b)=>b.d.localeCompare(a.d)||b.km-a.km);
+    const reads=[...S.log].sort((a,b)=>a.d.localeCompare(b.d));
+    let avg='–';
+    if(reads.length>1){const f=reads[0],l=reads[reads.length-1];const mo=(new Date(l.d)-new Date(f.d))/864e5/30.44;if(mo>0.5)avg=nf(Math.round((l.km-f.km)/mo));}
+    const yr=String(new Date().getFullYear());
+    const spentY=S.log.filter(e=>e.d.startsWith(yr)).reduce((a,e)=>a+(parseFloat(String(e.cost).replace(',','.'))||0),0);
+    const spentT=S.log.reduce((a,e)=>a+(parseFloat(String(e.cost).replace(',','.'))||0),0);
+    const eur=v=>v.toLocaleString('fr-FR',{maximumFractionDigits:0})+' €';
+    const rows=L.map(e=>`<div class="lrow"><span>${new Date(e.d+'T00:00').toLocaleDateString('fr-FR')}</span><span class="tp">${ic(e.t==='km'?'gauge':'wrench')}</span><span class="nm">${esc(e.name)}${e.note?`<small>${esc(e.note)}</small>`:''}</span><span class="rt">${nf(e.km)} km</span><span class="rt">${e.cost!==''?esc(e.cost)+' €':'–'}</span><button type="button" class="del ${R.logArm===e.id?'arm':''}" data-act="logdel" data-v="${e.id}" aria-label="Supprimer cette ligne">${ic(R.logArm===e.id?'check':'x')}</button></div>`).join('');
+    const names=[...new Set(S.items.map(i=>i.name))].map(n=>`<option value="${esc(n)}"></option>`).join('');
+    const right=R.logPanel==='export'?`
+      <div class="lbl">Exporter<span class="tag" style="margin-left:auto">CSV</span></div>
+      <div class="note">Format tableur (Excel, LibreOffice, Google Sheets). Dans l'appli, le fichier sera enregistré sur la clé USB ou envoyé au téléphone.</div>
+      <textarea class="csv" id="csv" readonly aria-label="Données exportées">${esc(toCSV())}</textarea>
+      <div class="btns"><button type="button" class="btn acc" data-act="csvcopy">Copier</button><button type="button" class="btn" data-act="logpanel" data-v="add">Retour</button></div>`
+      :`<div class="lbl">Ajouter une ligne</div>
+      <div class="seg"><button type="button" class="${R.logType!=='ent'?'on':''}" data-act="logtype" data-v="km">Relevé kilométrique</button><button type="button" class="${R.logType==='ent'?'on':''}" data-act="logtype" data-v="ent">Entretien / réparation</button></div>
+      <div class="frow"><div class="field">Date<input id="g-d" type="date" value="${iso(today())}"></div><div class="field">Kilométrage<input id="g-km" type="number" inputmode="numeric" value="${S.odo}"></div></div>
+      ${R.logType==='ent'?`<div class="field">Intervention<input id="g-n" list="g-names" placeholder="Ex. Vidange, pneus avant…"><datalist id="g-names">${names}</datalist></div>
+      <div class="frow"><div class="field">Coût (€)<input id="g-c" type="number" inputmode="decimal" placeholder="0"></div><div class="field">Note<input id="g-note" placeholder="Garage, pièce…"></div></div>`:''}
+      <div class="btns"><button type="button" class="btn acc" data-act="logadd">${ic('plus')}Ajouter</button><button type="button" class="btn" data-act="logpanel" data-v="export">${ic('download')}Exporter</button></div>`;
+    return `<div class="cols">
+      <div class="card"><div class="stats"><div class="stat"><b>${avg}</b><span>km par mois en moyenne</span></div><div class="stat"><b>${eur(spentY)}</b><span>dépensés en ${yr}</span></div><div class="stat"><b>${eur(spentT)}</b><span>dépensés au total</span></div></div>
+        <div class="lrow head"><span>Date</span><span></span><span>Intervention</span><span class="rt">Compteur</span><span class="rt">Coût</span><span></span></div>
+        <div class="scroll" style="margin-top:-12px"><div class="list">${rows||'<div class="note" style="padding:20px 8px">Aucune ligne pour l\'instant. Ajoutez un relevé ou un entretien à droite.</div>'}</div></div></div>
+      <div class="card">${right}</div></div>`;
+  },
+  maintDue(){
+    const it=S.items.find(i=>i.id===R.mSel)||S.items[0];
+    const rows=S.items.map(x=>{const s=mStatus(x);return `<button type="button" class="li ${it&&x.id===it.id?'sel':''}" data-act="msel" data-v="${x.id}"><div><div class="n">${esc(x.name)}</div><div class="d">Tous les ${every(x)}</div></div><span class="pill ${s.lv}">${s.txt}</span><div class="bar"><i class="${s.lv}" style="width:${Math.round(s.r*100)}%"></i></div></button>`}).join('');
+    let ed='';
+    if(it){const s=mStatus(it);ed=`
+      <div class="lbl">Détail</div>
+      <div class="field">Nom<input id="f-name" value="${esc(it.name)}"></div>
+      <div class="frow"><div class="field">Intervalle km<input id="f-km" type="number" inputmode="numeric" value="${it.km}"></div><div class="field">Intervalle mois<input id="f-mo" type="number" inputmode="numeric" value="${it.mo}"></div></div>
+      <div class="frow" style="grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)"><div class="field">Dernier (km)<input id="f-lkm" type="number" inputmode="numeric" value="${it.lastKm}"></div><div class="field">Dernier (date)<input id="f-ld" type="date" value="${it.lastDate}"></div></div>
+      <div class="note">Prochaine échéance : <b style="color:var(--fg)">${s.dueKm?s.dueKm+' ou ':''}${s.due}</b>, au premier des deux.</div>
+      <div class="btns"><button type="button" class="btn acc" data-act="mdone">${ic('check')}Fait aujourd'hui</button><button type="button" class="btn" data-act="msave">Enregistrer</button><button type="button" class="btn danger ${R.delArm?'arm':''}" data-act="mdel">${R.delArm?'Confirmer la suppression':'Supprimer'}</button></div>`;}
+    return `<div class="cols">
+      <div class="card"><div class="lbl">Échéances<span class="r"></span></div><div class="scroll"><div class="list">${rows}</div></div><div class="btns"><button type="button" class="btn" data-act="madd">${ic('plus')}Ajouter un entretien</button></div></div>
+      <div class="card">
+        <div class="odo"><div class="field">Kilométrage actuel (compteur)<input id="f-odo" type="number" inputmode="numeric" value="${S.odo}"></div><button type="button" class="btn acc" data-act="odo">Mettre à jour</button></div>
+        <div class="note">Entre deux saisies, l'appli ajoutera les km parcourus mesurés par le GPS. Intervalles indicatifs pour le 1.5 dCi : vérifiez votre carnet d'entretien.</div>
+        <div class="scroll" style="display:flex;flex-direction:column;gap:12px">${ed}</div>
+      </div></div>`;
+  },
+  fuel(){
+    const list=[...STATIONS].sort((a,b)=>S.fuelSort==='prix'?a.p-b.p:a.d-b.d);
+    const seg=(k,opts)=>`<div class="seg">${opts.map(o=>`<button type="button" class="${S[k]===o[0]?'on':''}" data-act="set" data-k="${k}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
+    return `<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${seg('fuelType',Object.keys(FUEL_BASE).map(k=>[k,k]))}<span style="flex:1"></span>${seg('fuelSort',[['prix','Moins cher'],['dist','Plus proche']])}<span class="tag">${R.online?'prix d\'exemple':'hors ligne · prix d\'hier'}</span></div>
+      <div class="card" style="flex:1"><div class="scroll"><div class="list">${list.map((s,i)=>`<div class="li" style="cursor:default"><div><div class="n">${s.n}</div><div class="d">${s.a} · ${String(s.d).replace('.',',')} km · mis à jour ${s.t}</div></div><div class="price" style="${i===0?'color:var(--accent)':''}">${pf(price(s))}<small>€/L</small><div class="d" style="text-align:right;letter-spacing:0">Plein 45 L : ${(price(s)*45).toFixed(2).replace('.',',')} €</div></div></div>`).join('')}</div></div></div>`;
+  },
+  radio(){
+    const P=[88.6,94.2,98.0,101.1,104.5,107.7];
+    return `<div class="card" style="flex:1"><div class="lbl">Radio de l'autoradio<span class="tag" style="margin-left:auto">FM</span></div><div class="radio">
+      <div class="freq">${S.freq.toFixed(1).replace('.',',')}<small>MHz</small></div>
+      <div class="rctl"><button type="button" class="rbtn" data-act="tune" data-v="-0.1" aria-label="Fréquence précédente">${ic('prev')}</button><button type="button" class="rbtn" data-act="tune" data-v="0.1" aria-label="Fréquence suivante">${ic('next')}</button></div>
+      <div class="presets">${P.map(p=>`<button type="button" class="chip ${Math.abs(p-S.freq)<.01?'on':''}" data-act="freq" data-v="${p}">${p.toFixed(1).replace('.',',')}</button>`).join('')}</div>
+      <div class="note">La vraie appli pilotera la radio d'origine du PX9 en arrière-plan.</div></div></div>`;
+  },
+  apps(){
+    const A=[['Réglages','sliders'],['ZLink','carplay'],['Radio','radio'],['Musique','music'],['Bluetooth','bt'],['Vidéos','film'],['Galerie','image'],['Fichiers','folder'],['Navigateur','globe'],['Égaliseur','eq'],['Paramètres Android','android'],['Interface d\'origine','home'],['Stationnement','parkP'],['Mises à jour','download'],['Téléphone','phone']];
+    return `<div class="card" style="flex:1"><div class="scroll"><div class="apps">${A.map(a=>`<button type="button" class="app" data-act="launch" data-v="${a[0]}"><span class="ico">${ic(a[1])}</span>${a[0]}</button>`).join('')}</div></div><div class="note">Liste d'exemple : la vraie appli affiche toutes les applis installées sur l'autoradio.</div></div>`;
+  },
+  settings(){
+    const seg=(k,opts)=>`<div class="seg">${opts.map(o=>`<button type="button" class="${S[k]===o[0]?'on':''}" data-act="set" data-k="${k}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
+    const sw=(k,cols,sq)=>`<div class="sw">${cols.map(c=>`<button type="button" class="swatch ${sq?'sq':''} ${S[k].toLowerCase()===c.toLowerCase()?'on':''}" style="background:${c}" data-act="set" data-k="${k}" data-v="${c}" aria-label="Couleur ${c}"></button>`).join('')}<input class="cpick" type="color" data-k="${k}" value="${S[k]}" aria-label="Couleur personnalisée"></div>`;
+    const tg=(k,label)=>`<button type="button" class="tgl ${S.side[k]?'on':''}" data-act="side" data-v="${k}">${label}<span class="s"></span></button>`;
+    return `<div class="scroll"><div class="sets">
+      <div class="card">
+        <div class="srow"><div class="k">Taille de l'interface<small>Agrandit ou réduit tout l'écran : textes, boutons et widgets.</small></div>${seg('ui',[[0.85,'Petite'],[1,'Normale'],[1.15,'Grande'],[1.3,'Très grande']])}</div>
+        <div class="srow"><div class="k">Mode jour / nuit<small>« Auto » passe en nuit quand les phares s'allument.</small></div>${seg('themeMode',[['auto','Auto (phares)'],['day','Jour'],['night','Nuit']])}</div>
+        <div class="srow"><div class="k">Couleur d'accent</div>${sw('accent',['#0A84FF','#30D158','#FF9F0A','#FF453A','#BF5AF2','#64D2FF','#E8C547'])}</div>
+        <div class="srow"><div class="k">Fond de jour</div>${sw('bgDay',['#EEF1F4','#FFFFFF','#E6EBF0','#ECEEE8','#F1ECEF'],1)}</div>
+        <div class="srow"><div class="k">Fond de nuit</div>${sw('bgNight',['#0B0D10','#000000','#0E1420','#101613','#17121A'],1)}</div>
+        <div class="srow"><div class="k">Sur l'accueil, afficher<small>La photo de la voiture, ou seulement son nom.</small></div>${seg('carShow',[['photo','La photo'],['name','Le nom']])}${S.carShow==='name'?`<div class="frow"><div class="field">Nom<input id="f-cname" value="${esc(S.carName)}" maxlength="20"></div><div class="field">Sous-titre<input id="f-csub" value="${esc(S.carSub)}" maxlength="40"></div></div>`:''}</div>
+        <div class="srow"><div class="k">Plaque d'immatriculation</div><div class="field"><input id="f-plate" value="${esc(S.plate)}" maxlength="12" style="text-transform:uppercase" aria-label="Plaque d'immatriculation"></div></div>
+        <div class="srow"><div class="k">Photo de la voiture<small>Affichée sur l'accueil. Réduite automatiquement pour économiser la mémoire.</small></div><div class="btns"><button type="button" class="btn" data-act="carphoto">${S.carPhoto?'Changer la photo':'Choisir une photo'}</button>${S.carPhoto?'<button type="button" class="btn danger" data-act="carphotodel">Retirer</button>':''}</div></div>
+      </div>
+      <div class="card">
+        <div class="srow"><div class="k">Ouvrir CarPlay automatiquement<small>Un bandeau laisse 5 secondes pour annuler.</small></div>${seg('autoCP',[['off','Jamais'],['phone','iPhone connecté'],['boot','Démarrage']])}</div>
+        <div class="srow"><div class="k">Barre latérale</div>${tg('fuel','Carburant')}${tg('radio','Radio')}</div>
+        <div class="srow"><div class="k">Système<small>Pour retrouver l'écran du fabricant ou tous les réglages d'Android.</small></div><div class="btns"><button type="button" class="btn" data-act="sys" data-v="android">${ic('android')}Paramètres Android</button><button type="button" class="btn" data-act="sys" data-v="stock">${ic('home')}Interface d'origine</button></div><div class="btns"><button type="button" class="btn" data-act="sys" data-v="default">Changer l'écran d'accueil par défaut</button></div></div>
+        <div class="srow"><div class="k">Infos véhicule (CAN-bus)<small>Température extérieure et autres infos : disponibles seulement si le boîtier CAN du PX9 les transmet. À tester sur la voiture.</small></div></div>
+        <div class="srow"><div class="k">Tout réinitialiser<small>Remet couleurs, disposition et entretiens d'exemple.</small></div><div><button type="button" class="btn danger ${R.delArm==='all'?'arm':''}" data-act="resetall">${R.delArm==='all'?'Confirmer':'Réinitialiser'}</button></div></div>
+      </div></div></div>`;
+  },
+  park(){
+    const P=parkInfo(),p=S.park;
+    const lims=LIMITS.map(l=>`<button type="button" class="chip ${(+p.limit||0)===l[0]?'on':''}" data-act="parklim" data-v="${l[0]}">${l[1]}</button>`).join('');
+    const left=`<div class="lbl">${ic('parkP')}Stationnement</div>
+      <div class="frow"><div class="field">Heure d'arrivée<input id="p-at" type="time" value="${P?P.atS:hm(new Date())}"></div><div class="field">Autre durée (minutes)<input id="p-lim" type="number" inputmode="numeric" min="0" value="${LIMITS.some(l=>l[0]===(+p.limit||0))?'':p.limit}" placeholder="Ex. 45"></div></div>
+      <div class="field">Durée autorisée<div class="sw">${lims}</div></div>
+      <div class="field">Où je suis garé (facultatif)<input id="p-note" value="${esc(p.note||'')}" placeholder="Ex. Parking de la gare, niveau -1"></div>
+      <button type="button" class="tgl ${p.auto?'on':''}" data-act="parkauto">Noter l'heure automatiquement à l'arrêt du moteur<span class="s"></span></button>`;
+    const right=P?`<div class="lbl">Garé à ${P.atS}${P.endS?`<span class="r">jusqu'à ${P.endS}</span>`:''}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px"><div class="big" style="font-size:80px;white-space:nowrap" data-prem>${P.big}</div><div class="sub" style="font-size:18px" data-punit>${P.unit}</div>
+      ${P.lim?`<div class="bar" style="height:10px;border-radius:5px"><i data-pbar class="${P.lv}" style="width:${Math.round(P.r*100)}%"></i></div>`:''}
+      ${p.note?`<div class="sub" style="font-size:16px">${ic('pin').replace('<svg','<svg style="width:18px;height:18px;vertical-align:-3px;margin-right:6px"')}${esc(p.note)}</div>`:''}</div>
+      <div class="btns"><button type="button" class="btn" data-act="parknow">Je me gare maintenant</button><button type="button" class="btn danger" data-act="parkend">Je repars</button></div>`
+      :`<div class="lbl">Aucun stationnement en cours</div><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px"><div class="note" style="font-size:15px">Touchez le bouton en arrivant. L'heure et la fin du stationnement autorisé restent affichées quand vous revenez.</div><button type="button" class="btn acc" style="height:64px;font-size:18px;justify-content:center" data-act="parknow">${ic('parkP')}Je me gare maintenant</button></div>`;
+    return `<div class="cols"><div class="card"><div class="scroll" style="display:flex;flex-direction:column;gap:14px">${left}</div></div><div class="card">${right}</div></div>`;
+  },
+  sys(){
+    const box=(icon,h,p,btns)=>`<div class="cplay"><div class="box"><div class="ring">${ic(icon)}</div><h3>${h}</h3><p>${p}</p><div class="btns" style="justify-content:center">${btns}</div></div></div>`;
+    const back=`<button type="button" class="btn acc" data-act="go" data-v="home">${ic('home')}Revenir à Clio Home</button>`;
+    if(R.sys==='android')return box('sliders','Paramètres Android',"Dans la vraie appli, les paramètres complets d'Android s'ouvrent ici : Wi-Fi, Bluetooth, son, date, applications, mises à jour. Le bouton Accueil de l'autoradio ramène sur Clio Home.",back);
+    if(R.sys==='stock')return box('android',"Interface d'origine","Dans la vraie appli, l'écran d'accueil du fabricant s'ouvre tel qu'avant. Clio Home reste l'écran par défaut : un appui sur le bouton Accueil de l'autoradio vous ramène ici.",back);
+    if(R.sys==='stockdef')return box('android',"Interface d'origine par défaut","Clio Home n'est plus l'écran d'accueil. Pour le remettre plus tard : Paramètres Android → Applications → Application d'accueil → Clio Home.",`<button type="button" class="btn acc" data-act="sysdef" data-v="clio">Annuler, garder Clio Home</button>`);
+    return box('home',"Écran d'accueil par défaut","Choisissez ce qui s'affiche quand vous appuyez sur le bouton Accueil de l'autoradio. Vous pourrez changer d'avis à tout moment.",`<button type="button" class="btn acc" data-act="sysdef" data-v="clio">Clio Home</button><button type="button" class="btn" data-act="sysdef" data-v="stock">Interface d'origine</button>`);
+  },
+  carplay(){
+    return `<div class="cplay"><div class="box"><div class="ring">${ic('carplay')}</div><h3>Ouverture de ZLink…</h3><p>Dans la vraie appli, ZLink s'ouvre ici en plein écran et CarPlay s'affiche. Le bouton Accueil de l'autoradio ramène sur Clio Home.</p><button type="button" class="btn acc" data-act="go" data-v="home">${ic('home')}Revenir à l'accueil</button></div></div>`;
+  }
+};
+
+/* ---------- live updates (no full re-render) ---------- */
+function tick(){
+  parkTick();
+  const d=new Date();
+  const t=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  let ds=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); ds=ds[0].toUpperCase()+ds.slice(1);
+  document.querySelectorAll('[data-clock]').forEach(e=>{if(e.textContent!==t)e.textContent=t});
+  const dsh=d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});document.querySelectorAll('[data-dshort]').forEach(e=>{if(e.textContent!==dsh)e.textContent=dsh});
+  document.querySelectorAll('[data-date]').forEach(e=>{if(e.textContent!==ds)e.textContent=ds});
+}
+setInterval(tick,1000);
+setInterval(()=>{R.speed=Math.max(0,Math.min(110,R.speed+Math.round((Math.random()-.48)*6)));document.querySelectorAll('[data-speed]').forEach(e=>e.textContent=R.speed)},1000);
+
+let toastT;
+function toast(msg,icon){const t=$('toast');t.innerHTML=(icon?ic(icon):'')+esc(msg);t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,1800);}
+function setVol(v){R.vol=Math.max(0,Math.min(30,v));document.querySelectorAll('[data-vol]').forEach(e=>e.textContent=R.vol);document.querySelectorAll('[data-volbar]').forEach(e=>e.style.width=(R.vol/30*100)+'%');toast('Volume '+R.vol,'vol');}
+
+function go(sc){R.screen=sc;R.edit=false;R.sel=null;R.delArm=false;renderSide();renderStatus();renderScreen();}
+
+function cpBanner(reason){
+  clearInterval(R.cdTimer);let n=5;const b=$('banner');
+  const draw=()=>{b.innerHTML=`${ic('carplay').replace('<svg','<svg style="width:24px;height:24px"')}${reason} · CarPlay s'ouvre dans ${n} s<button type="button" class="btn" data-act="cpcancel">Annuler</button><button type="button" class="btn acc" data-act="cpopen">Ouvrir</button>`};
+  draw();b.hidden=false;
+  R.cdTimer=setInterval(()=>{n--;if(n<=0){clearInterval(R.cdTimer);b.hidden=true;go('carplay')}else draw()},1000);
+}
+function cpStop(){clearInterval(R.cdTimer);$('banner').hidden=true}
+
+/* ---------- events ---------- */
+const dev=$('dev');
+dev.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]');
+  if(a){act(a.dataset.act,a.dataset.v,a);return;}
+  const w=e.target.closest('[data-w]');
+  if(!w)return;
+  const id=w.dataset.w;
+  if(R.edit){
+    if(!R.sel)R.sel=id;
+    else if(R.sel===id)R.sel=null;
+    else{const L=S.layout,i=L.indexOf(R.sel),j=L.indexOf(id);[L[i],L[j]]=[L[j],L[i]];R.sel=null;save();}
+    renderScreen();return;
+  }
+  if(id==='maint')go('maint');else if(id==='park')go('park');else if(id==='fuel')go('fuel');else if(id==='weather')toast('Prévisions détaillées : prévues dans la vraie appli');
+});
+function act(k,v,el){
+  switch(k){
+    case 'go': if(v==='carplay'){cpStop();} go(v);break;
+    case 'edit': R.edit=true;R.sel=null;renderStatus();renderScreen();break;
+    case 'done': R.edit=false;R.sel=null;renderStatus();renderScreen();break;
+    case 'hide': S.layout=S.layout.filter(x=>x!==v);S.hidden.push(v);if(R.sel===v)R.sel=null;save();renderScreen();break;
+    case 'show': S.hidden=S.hidden.filter(x=>x!==v);S.layout.push(v);save();renderScreen();break;
+    case 'reset': S.layout=[...DEF.layout];S.hidden=[...DEF.hidden];R.sel=null;save();renderScreen();break;
+    case 'vol': setVol(R.vol+Number(v));break;
+    case 'carphoto': fileIn.click();break;
+    case 'parknow': S.park.at=Date.now();save();renderScreen();toast('Garé à '+hm(new Date()),'check');break;
+    case 'parkend': S.park.at=0;save();renderScreen();toast('Stationnement terminé');break;
+    case 'parklim': S.park.limit=Number(v);save();renderScreen();break;
+    case 'parkauto': S.park.auto=!S.park.auto;save();renderScreen();break;
+    case 'sys': R.sys=v;go('sys');break;
+    case 'sysdef': if(v==='stock'){R.sys='stockdef';go('sys');}else{go('home');toast("Clio Home reste l'écran d'accueil",'check');}break;
+    case 'scroll': {const [i,d]=v.split(':').map(Number);const sc=document.querySelectorAll(SCR_SEL)[i];if(sc)sc.scrollTop+=d*Math.round(sc.clientHeight*0.8);break;}
+    case 'mtab': R.mTab=v;R.logArm=null;R.delArm=false;renderScreen();break;
+    case 'logpanel': R.logPanel=v;renderScreen();break;
+    case 'logtype': R.logType=v;renderScreen();break;
+    case 'logadd': {
+      const km=parseInt($('g-km').value,10),d=$('g-d').value;
+      if(!(km>=0)||!d){toast('Indiquez une date et un kilométrage');break;}
+      const ent=R.logType==='ent';const name=ent?($('g-n').value.trim()):'Relevé kilométrique';
+      if(ent&&!name){toast("Indiquez l'intervention");break;}
+      addLog({d,km,t:ent?'ent':'km',name,cost:ent?$('g-c').value.trim():'',note:ent?$('g-note').value.trim():''});
+      if(km>S.odo)S.odo=km;
+      if(ent){const it=S.items.find(i=>i.name.toLowerCase()===name.toLowerCase());if(it&&d>=it.lastDate){it.lastDate=d;it.lastKm=km;}}
+      save();renderScreen();toast('Ligne ajoutée','check');break;}
+    case 'logdel':
+      if(R.logArm!==v){R.logArm=v;renderScreen();break;}
+      S.log=S.log.filter(e=>e.id!==v);R.logArm=null;save();renderScreen();toast('Ligne supprimée');break;
+    case 'csvcopy': {const t=$('csv');const txt=toCSV();
+      const sel=()=>{t.focus();t.select();toast('Texte sélectionné : copiez-le');};
+      try{navigator.clipboard.writeText(txt).then(()=>toast('Copié : collez-le dans un tableur','check'),sel);}catch(e){sel();}
+      break;}
+    case 'carphotodel': S.carPhoto='';save();renderScreen();break;
+    case 'set': S[el.dataset.k]=el.dataset.k==='ui'?Number(v):v;save();R.delArm=false;fit();renderAll();break;
+    case 'side': S.side[v]=!S.side[v];save();renderSide();renderScreen();break;
+    case 'msel': R.mSel=v;R.delArm=false;renderScreen();break;
+    case 'odo': {const n=parseInt($('f-odo').value,10);if(!(n>=0)){toast('Entrez un kilométrage valide');break;}S.odo=n;addLog({t:'km',km:n,name:'Relevé kilométrique'});save();renderScreen();toast('Kilométrage enregistré','check');break;}
+    case 'msave': case 'mdone': {
+      const it=S.items.find(i=>i.id===R.mSel);if(!it)break;
+      it.name=$('f-name').value.trim()||it.name;
+      it.km=Math.max(0,parseInt($('f-km').value,10)||0);
+      it.mo=Math.max(0,parseInt($('f-mo').value,10)||0);
+      it.lastKm=Math.max(0,parseInt($('f-lkm').value,10)||0);
+      it.lastDate=$('f-ld').value||it.lastDate;
+      if(k==='mdone'){it.lastKm=S.odo;it.lastDate=iso(today());addLog({t:'ent',km:S.odo,name:it.name});}
+      save();renderScreen();toast(k==='mdone'?'Marqué comme fait aujourd\'hui':'Enregistré','check');break;}
+    case 'mdel':
+      if(!R.delArm){R.delArm=true;renderScreen();break;}
+      S.items=S.items.filter(i=>i.id!==R.mSel);R.mSel=S.items[0]&&S.items[0].id;R.delArm=false;save();renderScreen();break;
+    case 'madd': {const id='c'+Date.now();S.items.push({id,name:'Nouvel entretien',km:10000,mo:12,lastKm:S.odo,lastDate:iso(today())});R.mSel=id;R.delArm=false;save();renderScreen();break;}
+    case 'tune': S.freq=Math.round(Math.min(108,Math.max(87.5,S.freq+Number(v)))*10)/10;save();renderScreen();break;
+    case 'freq': S.freq=Number(v);save();renderScreen();break;
+    case 'launch': if(v==='Réglages')go('settings');else if(v==='ZLink')go('carplay');else if(v==='Stationnement')go('park');else if(v==='Paramètres Android'){R.sys='android';go('sys');}else if(v==="Interface d'origine"){R.sys='stock';go('sys');}else toast('Ouverture de « '+v+' »');break;
+    case 'cpcancel': cpStop();toast('Ouverture de CarPlay annulée');break;
+    case 'cpopen': cpStop();go('carplay');break;
+    case 'resetall':
+      if(R.delArm!=='all'){R.delArm='all';renderScreen();break;}
+      S=JSON.parse(JSON.stringify(DEF));R.delArm=false;save();renderAll();toast('Réglages réinitialisés','check');break;
+  }
+}
+dev.addEventListener('input',e=>{const k=e.target.classList.contains('cpick')&&e.target.dataset.k;if(k){S[k]=e.target.value;save();applyTheme();}});
+dev.addEventListener('change',e=>{if(e.target.classList.contains('cpick'))renderScreen();if(e.target.id==='p-at'&&e.target.value){const [h,m]=e.target.value.split(':').map(Number);const d=new Date();d.setHours(h,m,0,0);if(d>new Date())d.setDate(d.getDate()-1);S.park.at=d.getTime();save();renderScreen();toast("Heure d'arrivée corrigée",'check');}
+  if(e.target.id==='p-lim'){const n=parseInt(e.target.value,10);if(n>0){S.park.limit=n;save();renderScreen();}}
+  if(e.target.id==='p-note'){S.park.note=e.target.value.trim();save();renderScreen();}
+  if(e.target.id==='f-cname'||e.target.id==='f-csub'){S[e.target.id==='f-cname'?'carName':'carSub']=e.target.value.trim();save();renderScreen();toast('Enregistré','check');}if(e.target.id==='f-plate'){S.plate=e.target.value.toUpperCase().trim().replace(/[\/\s]+/g,'-')||'EA-846-SL';save();renderScreen();toast('Plaque enregistrée','check');}});
+
+/* long press on a widget enters edit mode */
+let lp;
+dev.addEventListener('pointerdown',e=>{if(R.screen!=='home'||R.edit||!e.target.closest('[data-w]')||e.target.closest('[data-act]')||e.target.closest('.carimg'))return;lp=setTimeout(()=>{R.edit=true;R.sel=null;renderStatus();renderScreen();},600);});
+['pointerup','pointerleave','pointercancel'].forEach(t=>dev.addEventListener(t,()=>clearTimeout(lp)));
+
+/* car photo: picked from the gallery, shrunk to keep memory low */
+const fileIn=document.createElement('input');fileIn.type='file';fileIn.accept='image/*';fileIn.hidden=true;document.body.appendChild(fileIn);
+fileIn.addEventListener('change',()=>{const f=fileIn.files[0];if(!f)return;const img=new Image();const url=URL.createObjectURL(f);
+  img.onload=()=>{const m=900,k=Math.min(1,m/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+    S.carPhoto=c.toDataURL('image/jpeg',0.8);save();renderScreen();toast('Photo enregistrée','check');fileIn.value='';};
+  img.onerror=()=>{toast('Cette image ne peut pas être lue');fileIn.value='';};img.src=url;});
+
+/* simulator */
+$('s-net').onclick=e=>{R.online=!R.online;e.target.textContent=R.online?'Couper Internet':'Rétablir Internet';renderAll();toast(R.online?'Internet rétabli':'Hors ligne : seules la météo et les prix ont besoin d\'Internet');};
+$('res').addEventListener('click',e=>{const b=e.target.closest('[data-res]');if(!b)return;R.res=b.dataset.res.split('x').map(Number);$('res').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));fit();renderAll();});
+const lightsBtn=$('s-lights');
+lightsBtn.onclick=()=>{R.lights=!R.lights;lightsBtn.textContent=R.lights?'Éteindre les phares':'Allumer les phares';renderAll();toast(R.lights?'Phares allumés':'Phares éteints');};
+$('s-vup').onclick=()=>setVol(R.vol+1);
+$('s-vdown').onclick=()=>setVol(R.vol-1);
+$('s-phone').onclick=()=>{R.phone=true;renderStatus();tick();if(R.screen==='home')renderScreen();if(S.autoCP==='phone')cpBanner('iPhone connecté');else toast('iPhone connecté','bt');};
+$('s-boot').onclick=()=>{cpStop();go('home');if(S.autoCP==='boot')cpBanner('Bienvenue');else toast('Démarrage terminé');};
+
+/* scale the 1280x720 screen to the page */
+function fit(){const st=$('stage'),[W,H]=R.res,f=Math.min(1,(st.clientWidth-26)/W),u=S.ui||1;
+  dev.style.width=(W/u)+'px';dev.style.height=(H/u)+'px';dev.style.transform=`scale(${f*u})`;
+  dev.style.left=((st.clientWidth-W*f)/2)+'px';dev.style.top='13px';st.style.height=(H*f+26)+'px';}
+window.addEventListener('resize',()=>{fit();addScrollBtns();});
+R.phone=false;
+fit();renderAll();
+})();
+</script>
