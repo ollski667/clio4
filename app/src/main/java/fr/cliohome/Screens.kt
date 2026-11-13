@@ -615,4 +615,4 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
     }
 }
 
-object BuildInfo { const val version = "0.7" }
+object BuildInfo { const val version = "0.7.1" }

@@ -57,17 +57,33 @@ td.n{text-align:right;white-space:nowrap}
 .ok{color:var(--ok);background:#e3f3e8}.warn{color:var(--warn);background:#fbefd9}.bad{color:var(--bad);background:#fbe3e0}.na{color:var(--muted);background:var(--soft)}
 .note{color:var(--muted);font-size:13px}
 footer{margin-top:32px;color:var(--muted);font-size:12px}
-@media print{body{padding:0}h2{break-after:avoid}tr{break-inside:avoid}}
-/* Téléphone : une carte par ligne au lieu d'un tableau trop large */
-@media (max-width:640px){
+/* Impression / PDF : rien n'est coupé entre deux pages */
+@media print{
+  body{padding:0;font-size:13px}
+  h1,h2{break-after:avoid;page-break-after:avoid}
+  .kpis,.kpi,tr,td,.note{break-inside:avoid;page-break-inside:avoid}
+  .tbl{overflow:visible}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+}
+/* Téléphone et impression : une carte par ligne (les cartes ne se coupent jamais entre deux pages) */
+@media (max-width:640px), print{
   table,tbody,tr,td{display:block;width:100%}
   tr:first-child{display:none}
-  tr{border:1px solid var(--line);border-radius:10px;padding:6px 12px;margin-bottom:10px}
+  tr{border:1px solid var(--line);border-radius:10px;padding:6px 12px;margin-bottom:10px;break-inside:avoid;page-break-inside:avoid}
   td{border:0;padding:4px 0;display:flex;justify-content:space-between;gap:12px;text-align:right}
   td::before{content:attr(data-l);color:var(--muted);font-size:13px;text-align:left;flex:none}
   td.t{font-weight:600;font-size:16px;text-align:left;display:block}
   td.t::before{content:none}
   td.n{white-space:normal}
+}
+/* Impression : une ligne compacte par élément, valeurs côte à côte */
+@media print{
+  tr{display:grid;grid-template-columns:1.6fr;grid-auto-columns:1fr;grid-auto-flow:column;gap:2px 14px;padding:7px 10px;margin-bottom:6px;border-radius:8px}
+  td,td.n{display:block;text-align:left;padding:0}
+  td>span{display:block;text-align:left}
+  td::before{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+  td.t{font-size:13.5px;align-self:center}
+  .st{font-size:10.5px;padding:1px 6px}
 }
 </style></head><body><div class="wrap">""")
         sb.append("<h1>Suivi d'entretien · ${esc(st.carName)}</h1>")
