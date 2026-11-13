@@ -115,7 +115,7 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 .st-pill.ok{color:var(--ok)} .st-pill.warn{color:var(--warn)} .st-pill.bad{color:var(--bad)}
 
 /* car tile */
-.carname{font:300 min(84px,30cqh) var(--display);letter-spacing:.14em;text-transform:uppercase;line-height:1}
+.carname{font:300 min(104px,40cqh,16cqw) var(--display);letter-spacing:.14em;text-transform:uppercase;line-height:1}
 .carsub{font:500 14px var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .carline{width:100%;height:auto;max-height:46cqh;color:var(--fg);opacity:.9}
 .plate{display:inline-flex;align-items:stretch;height:26px;background:#fff;color:#111;border:1.5px solid #111;letter-spacing:.08em}
@@ -271,7 +271,7 @@ function home(){
   const top=items.slice(0,3);
   return `<div class="grid">
     ${f(`<div class="lbl">Ma Clio <span class="plate"><span class="eu">F</span><span class="n">EA-846-SL</span><span class="rg"></span></span><span class="r">${nf(ODO)} KM</span></div>
-      ${R.showCar==='name'?`<div><div class="carname">Clio&nbsp;4</div><div class="carsub" style="margin-top:10px">Phase 2 · 1.5 dCi · 2016</div></div>${CAR_SVG}`:`<div style="display:flex;align-items:center;justify-content:center;flex:1"><span class="plate" style="height:64px;transform:scale(1)"><span class="eu" style="width:34px;font-size:18px">F</span><span class="n" style="font-size:44px;padding:0 22px">EA-846-SL</span><span class="rg" style="width:26px"></span></span></div>`}`,'w s2')}
+      ${R.showCar==='name'?`<div><div class="carname">Clio&nbsp;4</div><div class="carsub" style="margin-top:10px">Phase 2 · 1.5 dCi · 2016</div></div><div></div>`:`<div style="display:flex;align-items:center;justify-content:center;flex:1"><span class="plate" style="height:64px;transform:scale(1)"><span class="eu" style="width:34px;font-size:18px">F</span><span class="n" style="font-size:44px;padding:0 22px">EA-846-SL</span><span class="rg" style="width:26px"></span></span></div>`}`,'w s2')}
     ${f(`<div class="lbl">${ic('gauge')}Vitesse</div><div class="big" style="--fs:110px"><span data-speed>${R.speed}</span><span class="unit">km/h</span></div><div data-speedbar>${seg(18,Math.round(R.speed/130*18))}</div>`,'w')}
     ${f(`<div class="lbl">${ic('thermo')}Extérieur<span class="tag" style="margin-left:auto">exemple</span></div><div class="big" style="--fs:96px">9°</div><div class="sub"><b>Couvert</b> · 7° / 13°<br>Pluie possible vers 17 h</div>`,'w tap','" data-go="weather')}
     ${f(`<div class="lbl">${ic('wrench')}Entretien<span class="r">${nf(ODO)} KM</span></div>`+top.map(it=>`<div style="display:flex;flex-direction:column;gap:7px"><div style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500">${it.n}<span class="st-pill ${it.lv}" style="margin-left:auto">${it.t}</span></div>${seg(30,Math.round(it.r*30),'thin '+it.lv)}</div>`).join(''),'w s2 tap','" data-go="maint')}
