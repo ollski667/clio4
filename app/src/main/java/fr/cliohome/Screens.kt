@@ -142,7 +142,7 @@ private fun MainActivity.editor(it: Maint): View {
             addView(dateBox, lp(0, WRAP, 1.2f))
         })
         addView(tv(if (d.lv < 0) "Indiquez le kilométrage et la date du dernier entretien." else "Prochaine échéance : " + listOfNotNull(d.dueKm, d.dueDate).joinToString(" ou ") + ", au premier des deux.", 15, Pal.muted))
-        addView(row(10) {
+        addView(col(10) {
             addView(btn("Fait aujourd'hui", R.drawable.ic_check, Btn.ACCENT) { save(true) })
             addView(btn("Enregistrer") { save(false) })
         })
@@ -223,7 +223,7 @@ private fun MainActivity.logView(compact: Boolean): View {
                 addView(nBox)
                 addView(row(12) { addView(cBox, lp(0, WRAP, 1f)); addView(noteBox, lp(0, WRAP, 1f)) })
             }
-            addView(row(10) {
+            addView(col(10) {
                 addView(btn("Ajouter", R.drawable.ic_plus, Btn.ACCENT) {
                     val km = kmE.text.toString().toIntOrNull()
                     if (km == null) { toast("Indiquez le kilométrage"); return@btn }
@@ -349,9 +349,9 @@ fun MainActivity.parkScreen(compact: Boolean): View {
                 if (st.parkNote.isNotEmpty()) addView(row(6) { addView(icon(R.drawable.ic_pin, 18, Pal.muted)); addView(tv(st.parkNote, 18.5, Pal.muted, 400, 1)) })
             }, lp(MATCH, 0, 1f))
             ticks.add { parkInfo()?.let { q -> big.text = q.big; big.color = if (q.lv > 0) Pal.level(q.lv) else Pal.fg; unit.text = q.unit; b.ratio = q.r; b.color = Pal.level(q.lv) } }
-            addView(row(10) {
-                addView(btn("Je me gare maintenant") { parkNow() })
-                addView(btn("Je repars", style = Btn.DANGER) { st.parkAt = 0L; toast("Stationnement terminé"); render() })
+            addView(row(18) {
+                addView(iconBtn(R.drawable.ic_park, "Je me gare", Btn.ACCENT) { parkNow() })
+                addView(iconBtn(R.drawable.ic_leave, "Je repars", Btn.DANGER) { st.parkAt = 0L; toast("Stationnement terminé"); render() })
             })
         }
     }
@@ -398,6 +398,7 @@ fun MainActivity.appsScreen(compact: Boolean): View {
 private val STABS = listOf(
     Triple("affichage", "Affichage", R.drawable.ic_sliders),
     Triple("accueil", "Accueil", R.drawable.ic_home),
+    Triple("position", "Position et GPS", R.drawable.ic_pin),
     Triple("carplay", "CarPlay et applis", R.drawable.ic_carplay),
     Triple("barre", "Barre latérale", R.drawable.ic_grid),
     Triple("suivi", "Suivi et carburant", R.drawable.ic_wrench),
@@ -465,6 +466,60 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
                     row { addView(btn("Modifier l'accueil", R.drawable.ic_sliders) { screen = "home"; edit = true; sel = null; render() }) }),
             )
         }
+        "position" -> {
+            val state = sys.gpsState()
+            val gpsText = when (state) {
+                Sys.Gps.OK -> "Actif : position et vitesse reçues."
+                Sys.Gps.SEARCHING -> "En recherche de signal. En extérieur, cela prend jusqu'à 2 minutes."
+                Sys.Gps.NOT_FOUND -> "Aucun signal depuis le démarrage. L'autoradio a besoin de son antenne GPS : un petit boîtier noir au bout d'un fil, branché à l'arrière sur la prise « GPS », et placé sous le pare-brise ou le haut du tableau de bord."
+                Sys.Gps.OFF -> "La localisation est désactivée dans Android."
+                Sys.Gps.NO_PERMISSION -> "La position n'est pas autorisée pour Clio Home."
+            }
+            val (cityBox, cityE) = field("Ville ou code postal", "", hint = "Ex. Villeurbanne ou 69100")
+            listOf(
+                blk("GPS de l'autoradio", gpsText, row(10) {
+                    if (state == Sys.Gps.NO_PERMISSION) addView(btn("Autoriser la position", R.drawable.ic_pin, Btn.ACCENT) { fixGps() })
+                    else addView(btn("Paramètres de localisation", R.drawable.ic_pin) { sys.openLocationSettings() })
+                }),
+                blk("Ma ville (position de secours)",
+                    "Utilisée pour la météo et les prix du carburant tant que le GPS ne capte pas." + if (st.city.isNotEmpty()) " Ville actuelle : ${st.city}." else " Aucune ville choisie.",
+                    row(12) {
+                        gravity = Gravity.BOTTOM
+                        addView(cityBox, lp(0, WRAP, 1f))
+                        addView(btn("Rechercher", style = Btn.ACCENT) {
+                            val q = cityE.text.toString().trim()
+                            if (q.isEmpty()) { toast("Entrez une ville ou un code postal"); return@btn }
+                            toast("Recherche…")
+                            sys.geocode(q) { res ->
+                                when {
+                                    res == null -> toast("Recherche impossible : vérifiez la connexion Internet")
+                                    res.isEmpty() -> toast("Aucune ville trouvée pour « $q »")
+                                    else -> { citySearch = res; render() }
+                                }
+                            }
+                        })
+                    },
+                    col {
+                        citySearch.forEachIndexed { i, pl ->
+                            if (i > 0) addView(line())
+                            addView(row(12) {
+                                setPadding(px(4), px(12), px(4), px(12))
+                                addView(icon(R.drawable.ic_pin, 20, Pal.accent))
+                                addView(tv(pl.name, 18, Pal.fg, 500, 1))
+                                addView(tv(pl.region, 16, Pal.muted, 400, 1), lp(0, WRAP, 1f))
+                                addView(tv("Choisir ›", 16, Pal.accent, 500))
+                                onTap {
+                                    st.city = pl.name; st.cityLat = pl.lat; st.cityLon = pl.lon
+                                    if (sys.gpsState() != Sys.Gps.OK) { st.lastLat = pl.lat; st.lastLon = pl.lon }
+                                    citySearch = emptyList()
+                                    sys.refreshWeather(true) { render() }; sys.refreshFuel(true) { render() }
+                                    toast("Ville enregistrée : ${pl.name}"); render()
+                                }
+                            })
+                        }
+                    }),
+            )
+        }
         "carplay" -> listOf(
             blk("Ouvrir CarPlay automatiquement", "Au démarrage de l'autoradio, un bandeau laisse 5 secondes pour annuler.",
                 seg(listOf("off" to "Jamais", "boot" to "Au démarrage"), st.autoCP) { st.autoCP = it; render() }),
@@ -529,4 +584,4 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
     }
 }
 
-object BuildInfo { const val version = "0.3.1" }
+object BuildInfo { const val version = "0.4" }

@@ -90,6 +90,11 @@ class Store(ctx: Context) {
     var parkLimit get() = p.getInt("parkLimit", 60); set(v) = put("parkLimit", v)
     var parkNote get() = p.getString("parkNote", "")!!; set(v) = put("parkNote", v)
 
+    // Position de secours quand le GPS ne capte pas
+    var city get() = p.getString("city", "")!!; set(v) = put("city", v)
+    var cityLat get() = p.getFloat("cityLat", 0f); set(v) = put("cityLat", v)
+    var cityLon get() = p.getFloat("cityLon", 0f); set(v) = put("cityLon", v)
+
     // Caches hors ligne
     var lastLat get() = p.getFloat("lat", 0f); set(v) = put("lat", v)
     var lastLon get() = p.getFloat("lon", 0f); set(v) = put("lon", v)

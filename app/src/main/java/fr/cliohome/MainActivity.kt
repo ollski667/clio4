@@ -39,6 +39,8 @@ class MainActivity : Activity() {
     var mSel: String? = null
     var logType = "km"
     var armed: String? = null
+    /** Résultats de la recherche de ville (Réglages → Position). */
+    var citySearch: List<Sys.Place> = emptyList()
 
     /** Petites mises à jour (vitesse, minuteur…) appelées chaque seconde sans tout redessiner. */
     val ticks = mutableListOf<() -> Unit>()
@@ -83,6 +85,7 @@ class MainActivity : Activity() {
             Sys.Gps.NO_PERMISSION -> requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 2)
             Sys.Gps.OFF -> { toast("Activez la localisation, puis revenez"); sys.openLocationSettings() }
             Sys.Gps.SEARCHING -> toast("Signal GPS en recherche : en extérieur, cela prend jusqu'à 2 minutes")
+            Sys.Gps.NOT_FOUND -> { st.settingsTab = "position"; go("settings") }
             Sys.Gps.OK -> toast("GPS actif")
         }
     }
@@ -157,6 +160,7 @@ class MainActivity : Activity() {
     fun runTicks() { for (t in ticks) t() }
 
     private fun refreshOnline() {
+        sys.useCityIfNoGps()
         sys.refreshWeather { if (screen == "home") render() }
         sys.refreshFuel { if (screen == "home" || screen == "fuel") render() }
     }
@@ -221,14 +225,7 @@ class MainActivity : Activity() {
         if (cpCountdown > 0) showBanner()
         root.addView(frame, LinearLayout.LayoutParams(0, MATCH, 1f))
 
-        // Barre de lumière en haut de l'écran, avec un léger halo
-        val screenBox = FrameLayout(this)
-        screenBox.addView(root, FrameLayout.LayoutParams(MATCH, MATCH))
-        screenBox.addView(View(this).apply {
-            background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(Pal.glow, 0x00000000))
-        }, FrameLayout.LayoutParams(MATCH, px(16)))
-        screenBox.addView(View(this).apply { setBackgroundColor(Pal.light) }, FrameLayout.LayoutParams(MATCH, max(2, px(3))))
-        setContentView(screenBox)
+        setContentView(root)
         runTicks()
     }
 

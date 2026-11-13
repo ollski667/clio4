@@ -152,6 +152,12 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 
 .toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:6;background:var(--fg);color:var(--bg);padding:12px 22px;font:500 16px var(--display);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
 [hidden]{display:none!important}
+.ibtn{display:flex;flex-direction:column;align-items:center;gap:8px;font:500 14px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--fg)}
+.ib{width:84px;height:72px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:var(--panel2);border:1px solid var(--edge-lo)}
+.ib svg{width:34px;height:34px}
+.ib.acc{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.ib.bad{color:var(--bad)}
+.dev[data-font="normal"] .ibtn{text-transform:none;letter-spacing:normal}
 .srow{display:flex;align-items:center;gap:14px;width:100%;padding:16px 12px;border-bottom:1px solid var(--edge-lo);font:500 17px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left}
 .srow svg{width:22px;height:22px}
 .srow span{flex:1}
@@ -197,7 +203,6 @@ button.kv{color:inherit;font:inherit;font-size:17px;cursor:pointer}
 
   <div class="stage" id="stage">
     <div class="dev" id="dev" data-mode="nuit" data-font="angular">
-      <div class="lightbar"></div>
       <nav class="side" id="side"></nav>
       <div class="main">
         <div class="status" id="status"></div>
@@ -248,6 +253,7 @@ const I={
   sliders:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><path d="M14 4h4v4h-4zM8 10h4v4H8zM16 16h4v4h-4z"/>',
   android:'<path d="M5 9h14v10H5z"/><path d="M8 9a4 4 0 0 1 8 0M8 5l1.5 2M16 5l-1.5 2"/>',
   info:'<path d="M3 3h18v18H3z"/><path d="M12 11v6M12 7v1"/>',
+  leave:'<path d="M14 4h6v16h-6"/><path d="M15 12H4M8 8l-4 4 4 4"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
@@ -329,7 +335,7 @@ function park(){
     ${f(`<div class="lbl">${ic('park')}Durée autorisée</div><div style="display:flex;gap:10px;flex-wrap:wrap">${[['Sans limite',0],['15 min',15],['30 min',30],['1 h',60],['1 h 30',90],['2 h',120],['3 h',180]].map(l=>`<button type="button" class="chip ${R.parkLim===l[1]?'on':''}" data-lim="${l[1]}">${l[0]}</button>`).join('')}</div>
       <div class="kv"><span>Arrivée</span><b>${p.at}</b></div><div class="kv"><span>Fin autorisée</span><b>${p.end}</b></div><div class="kv"><span>Où</span><b>Parking de la gare, niveau -1</b></div>`,'card')}
     ${f(`<div class="lbl">Garé à ${p.at}<span class="r">jusqu'à ${p.end}</span></div><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px"><div style="font:300 96px/1 var(--display);color:var(--${p.lv==='ok'?'fg':p.lv})" data-prem>${p.big}</div><div class="sub" style="font-size:20.5px">${p.rem<=0?'de dépassement':'restantes'}</div><div data-pbar>${seg(24,Math.round(p.r*24),p.lv)}</div></div>
-      <div class="btns"><button type="button" class="btn steel" data-park="now">${ic('park')}Je me gare</button><button type="button" class="btn" data-toast="Stationnement terminé">Je repars</button></div>`,'card')}
+      <div style="display:flex;gap:18px"><button type="button" class="ibtn" data-park="now"><span class="ib acc">${ic('park')}</span>Je me gare</button><button type="button" class="ibtn" data-toast="Stationnement terminé"><span class="ib bad">${ic('leave')}</span>Je repars</button></div>`,'card')}
   </div>`;
 }
 function apps(){

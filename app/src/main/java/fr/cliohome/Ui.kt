@@ -189,6 +189,22 @@ fun Context.btn(text: String, iconRes: Int = 0, style: Btn = Btn.PLAIN, height: 
     }
 }
 
+/** Gros bouton à icône avec un court libellé dessous (pour les endroits étroits). */
+fun Context.iconBtn(res: Int, caption: String, style: Btn = Btn.PLAIN, onClick: () -> Unit) = col(8) {
+    gravity = Gravity.CENTER_HORIZONTAL
+    val fgc = when (style) { Btn.ACCENT -> Pal.onAccent; Btn.DANGER -> Pal.bad; Btn.DANGER_ARMED -> Color.WHITE; Btn.PLAIN -> Pal.fg }
+    addView(FrameLayout(context).apply {
+        background = when (style) {
+            Btn.ACCENT -> rounded(Pal.accent, 18)
+            Btn.DANGER_ARMED -> rounded(Pal.bad, 18)
+            else -> rounded(Pal.surface2, 18, Pal.line, 1)
+        }
+        addView(icon(res, 34, fgc), FrameLayout.LayoutParams(px(34), px(34), Gravity.CENTER))
+    }, LinearLayout.LayoutParams(px(84), px(72)))
+    addView(dtv(caption, 14, Pal.fg, 500, .1f).apply { gravity = Gravity.CENTER })
+    onTap(onClick)
+}
+
 /** Puce de choix (filtres, options). */
 fun Context.chip(text: String, on: Boolean = false, f: () -> Unit) = dtv(text, 15, if (on) Pal.onAccent else Pal.fg, 500, .12f).apply {
     gravity = Gravity.CENTER

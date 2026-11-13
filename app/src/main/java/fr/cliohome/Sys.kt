@@ -99,7 +99,9 @@ class Sys(private val ctx: Context, private val st: Store) {
     var onGps: (() -> Unit)? = null
 
     /** État du GPS pour le widget : ce qui manque, ou que tout va bien. */
-    enum class Gps { NO_PERMISSION, OFF, SEARCHING, OK }
+    enum class Gps { NO_PERMISSION, OFF, SEARCHING, NOT_FOUND, OK }
+    private val startedAt = System.currentTimeMillis()
+    private var everFix = false
 
     fun hasLocationPermission() = ctx.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
@@ -111,6 +113,8 @@ class Sys(private val ctx: Context, private val st: Store) {
         !hasLocationPermission() -> Gps.NO_PERMISSION
         !gpsOn() -> Gps.OFF
         gpsFix && System.currentTimeMillis() - lastGpsAt < 10_000L -> Gps.OK
+        // Aucun signal après 4 minutes : antenne GPS absente ou mal placée
+        !everFix && System.currentTimeMillis() - startedAt > 4 * 60_000L -> Gps.NOT_FOUND
         else -> Gps.SEARCHING
     }
 
@@ -119,7 +123,7 @@ class Sys(private val ctx: Context, private val st: Store) {
             val prev = lastLoc
             val now = System.currentTimeMillis()
             if (l.provider == LocationManager.GPS_PROVIDER) {
-                gpsFix = true; lastGpsAt = now
+                gpsFix = true; everFix = true; lastGpsAt = now
                 speedKmh = when {
                     l.hasSpeed() -> (l.speed * 3.6f).toInt()
                     // Certains GPS ne donnent pas la vitesse : on la calcule entre deux positions
@@ -161,6 +165,32 @@ class Sys(private val ctx: Context, private val st: Store) {
         if (!listening) return
         try { (ctx.getSystemService(Context.LOCATION_SERVICE) as LocationManager).removeUpdates(listener) } catch (e: Exception) {}
         listening = false
+    }
+
+    /** Une ville trouvée par la recherche (Réglages → Position). */
+    class Place(val name: String, val region: String, val lat: Float, val lon: Float)
+
+    /** Cherche une ville ou un code postal en France (Open-Meteo, gratuit, sans compte). */
+    fun geocode(query: String, done: (List<Place>?) -> Unit) {
+        val url = "https://geocoding-api.open-meteo.com/v1/search?name=" + URLEncoder.encode(query.trim(), "UTF-8") + "&count=6&language=fr&countryCode=FR"
+        thread {
+            val s = get(url)
+            val res = try {
+                if (s == null) null else {
+                    val a = JSONObject(s).optJSONArray("results")
+                    if (a == null) emptyList() else (0 until a.length()).map {
+                        val o = a.getJSONObject(it)
+                        Place(o.getString("name"), o.optString("admin2", o.optString("admin1")), o.getDouble("latitude").toFloat(), o.getDouble("longitude").toFloat())
+                    }
+                }
+            } catch (e: Exception) { null }
+            main.post { done(res) }
+        }
+    }
+
+    /** Utilise la ville choisie comme position quand le GPS n'a rien donné. */
+    fun useCityIfNoGps() {
+        if (!everFix && st.cityLat != 0f) { st.lastLat = st.cityLat; st.lastLon = st.cityLon }
     }
 
     fun openLocationSettings() = start(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) || openAndroidSettings()

@@ -171,9 +171,10 @@ fun MainActivity.widget(id: String): LinearLayout = when (id) {
                 Sys.Gps.NO_PERMISSION -> "Position non autorisée · touchez pour autoriser"
                 Sys.Gps.OFF -> "Localisation désactivée · touchez pour l'activer"
                 Sys.Gps.SEARCHING -> "Recherche du signal GPS… (en extérieur, jusqu'à 2 min)"
+                Sys.Gps.NOT_FOUND -> "GPS non détecté · antenne GPS branchée ? Touchez pour en savoir plus"
                 Sys.Gps.OK -> ""
             }
-            sub.setTextColor(if (state == Sys.Gps.NO_PERMISSION || state == Sys.Gps.OFF) Pal.warn else Pal.muted)
+            sub.setTextColor(if (state == Sys.Gps.SEARCHING || state == Sys.Gps.OK) Pal.muted else Pal.warn)
             sub.visibility = if (state == Sys.Gps.OK) View.GONE else View.VISIBLE
         }
         upd(); ticks.add(upd)

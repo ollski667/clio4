@@ -13,8 +13,8 @@ android {
         // sur une base plus ancienne : on reste compatible dès Android 7.
         minSdk = 24
         targetSdk = 33
-        versionCode = 4
-        versionName = "0.3.1"
+        versionCode = 5
+        versionName = "0.4"
     }
 
     signingConfigs {
