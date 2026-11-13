@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600&family=Barlow:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 /* Layout: dark bench showing the 1280x720 head unit, faceted steel panels on a 4x2 grid, light bar across the top edge */
 :root{
@@ -152,6 +152,20 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 
 .toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:6;background:var(--fg);color:var(--bg);padding:12px 22px;font:500 14px var(--display);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
 [hidden]{display:none!important}
+.srow{display:flex;align-items:center;gap:14px;width:100%;padding:16px 12px;border-bottom:1px solid var(--edge-lo);font:500 15px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left}
+.srow svg{width:22px;height:22px}
+.srow span{flex:1}
+.srow b{font-size:20px;font-weight:400}
+.srow.on{color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);box-shadow:inset 3px 0 0 var(--accent)}
+button.kv{color:inherit;font:inherit;font-size:15px;cursor:pointer}
+/* typo normale : police classique, sans majuscules forcées */
+.dev[data-font="normal"]{--display:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.dev[data-font="normal"] :is(.ttl,.nav,.chip,.btn,.srow,.sk,.carname,.carsub,.unit,.app,.toast){text-transform:none;letter-spacing:normal}
+.dev[data-font="normal"] .ttl{font-weight:600}
+.dev[data-font="normal"] .nav{font-size:13px}
+.dev[data-font="normal"] .carname{font-weight:600;letter-spacing:-.01em}
+.dev[data-font="normal"] .lbl{letter-spacing:.07em}
+.dev[data-font="normal"] .big{font-weight:300;letter-spacing:-.03em}
 .sets{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
 .sblk{display:flex;flex-direction:column;gap:10px;padding:14px 0;border-bottom:1px solid var(--edge-lo)}
 .sblk:first-child{padding-top:0}.sblk:last-child{border-bottom:0;padding-bottom:0}
@@ -182,7 +196,7 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
   </div>
 
   <div class="stage" id="stage">
-    <div class="dev" id="dev" data-mode="nuit">
+    <div class="dev" id="dev" data-mode="nuit" data-font="angular">
       <div class="lightbar"></div>
       <nav class="side" id="side"></nav>
       <div class="main">
@@ -233,6 +247,7 @@ const I={
   park:'<path d="M4 3h16v18H4z"/><path d="M10 17V7h3a3 3 0 0 1 0 6h-3"/>',
   sliders:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><path d="M14 4h4v4h-4zM8 10h4v4H8zM16 16h4v4h-4z"/>',
   android:'<path d="M5 9h14v10H5z"/><path d="M8 9a4 4 0 0 1 8 0M8 5l1.5 2M16 5l-1.5 2"/>',
+  info:'<path d="M3 3h18v18H3z"/><path d="M12 11v6M12 7v1"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
@@ -246,7 +261,7 @@ const nf=n=>n.toLocaleString('fr-FR');
 const f=(inner,cls='',st='')=>{const c=cls.split(' ').filter(Boolean),o=c.filter(x=>x==='s2'||x==='tap').join(' '),n=c.filter(x=>x!=='s2'&&x!=='tap').join(' ');return `<div class="f ${o}"${st?` style="${st}"`:''}><div class="in ${n}">${inner}</div></div>`;};
 const seg=(n,on,cls='')=>`<div class="segbar ${cls}">${Array.from({length:n},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div>`;
 
-const R={ui:1,autoCP:'off',sFuel:true,sPark:true,screen:'home',speed:52,showCar:'name',sel:0,parkAt:Date.now()-38*60000,parkLim:60};
+const R={sTab:'affichage',font:'angular',fuelType:'gazole',tank:45,ui:1,autoCP:'off',sFuel:true,sPark:true,screen:'home',speed:52,showCar:'name',sel:0,parkAt:Date.now()-38*60000,parkLim:60};
 const ODO=98450;
 const items=[
   {n:'Liquide de frein',e:'24 mois',r:.99,lv:'warn',t:'8 j',due:'20 nov. 2026',last:'20 nov. 2024'},
@@ -328,23 +343,35 @@ function carplay(){
     <div class="sub">Dans l'appli, ZLink s'ouvre ici en plein écran. Le bouton Accueil de l'autoradio ramène sur Clio Home.</div>
     <button type="button" class="btn" data-go="home">${ic('home')}Accueil</button></div></div>`;
 }
+const STABS=[['affichage','Affichage','sliders'],['accueil','Accueil','home'],['carplay','CarPlay et applis','carplay'],['barre','Barre latérale','grid'],['suivi','Suivi et carburant','wrench'],['systeme','Système','android'],['apropos','À propos','info']];
 function settings(){
   const mode=$('dev').dataset.mode, acc=getComputedStyle($('dev')).getPropertyValue('--accent').trim().toLowerCase();
   const ch=(k,opts,cur)=>`<div style="display:flex;gap:8px;flex-wrap:wrap">${opts.map(o=>`<button type="button" class="chip ${String(cur)===String(o[0])?'on':''}" data-set="${k}:${o[0]}">${o[1]}</button>`).join('')}</div>`;
   const blk=(t,sub,body)=>`<div class="sblk"><div class="sk">${t}${sub?`<small>${sub}</small>`:''}</div>${body}</div>`;
   const tg=(k,label,on)=>`<button type="button" class="tgl ${on?'on':''}" data-set="${k}:${on?0:1}"><span>${label}</span><i></i></button>`;
-  return `<div class="scroll"><div class="sets">
-    ${f(blk('Taille de l\'interface','Agrandit ou réduit textes, boutons et widgets.',ch('ui',[[0.85,'Petite'],[1,'Normale'],[1.15,'Grande'],[1.3,'Très grande']],R.ui))+
+  const P={
+    affichage:()=>blk('Taille de l\'interface','Agrandit ou réduit textes, boutons et widgets.',ch('ui',[[0.85,'Petite'],[1,'Normale'],[1.15,'Grande'],[1.3,'Très grande']],R.ui))+
+      blk('Typographie','Anguleuse : majuscules espacées. Normale : police classique, plus facile à lire.',ch('font',[['angular','Anguleuse'],['normal','Normale']],R.font))+
       blk('Mode jour / nuit','« Auto » passe en Nuit à la tombée du jour ou avec les phares.',ch('mode',[['auto','Auto'],['acier','Jour'],['nuit','Nuit']],mode))+
-      blk('Couleur d\'accent','',`<div class="swr">${ACC.map(c=>`<button type="button" style="background:${c}" class="${acc===c.toLowerCase()?'on':''}" data-acc="${c}" aria-label="Couleur ${c}"></button>`).join('')}</div>`)+
-      blk('Sur l\'accueil, afficher','',ch('car',[['name','Le nom'],['plate','La plaque'],['photo','Une photo']],R.showCar))+
-      blk('Plaque','',`<div class="kv" style="border:0;padding:0"><span class="plate"><span class="eu">F</span><span class="n">EA-846-SL</span><span class="rg"></span></span><button type="button" class="chip" data-toast="Modifier la plaque">Modifier</button></div>`),'card')}
-    ${f(blk('Ouvrir CarPlay automatiquement','Au démarrage, un bandeau laisse 5 secondes pour annuler.',ch('cp',[['off','Jamais'],['boot','Au démarrage']],R.autoCP))+
-      blk('Applis liées','Détectées automatiquement.',`<div class="kv"><span>CarPlay</span><b>ZLink</b></div><div class="kv"><span>Radio</span><b>Radio FM</b></div>`)+
-      blk('Barre latérale','',tg('sFuel','Carburant',R.sFuel)+tg('sPark','Parking',R.sPark))+
-      blk('Système','Pour retrouver l\'écran du fabricant ou tous les réglages d\'Android.',`<div class="btns"><button type="button" class="btn" data-toast="Ouverture des paramètres Android">${ic('android')}Paramètres Android</button><button type="button" class="btn" data-toast="Ouverture de l'interface d'origine">${ic('home')}Interface d'origine</button></div>`)+
-      blk('Tout réinitialiser','Remet les réglages et efface le suivi.',`<div><button type="button" class="btn" style="color:var(--bad)" data-toast="Appuyez encore pour confirmer">Réinitialiser</button></div>`),'card')}
-  </div></div>`;
+      blk('Couleur d\'accent','',`<div class="swr">${ACC.map(c=>`<button type="button" style="background:${c}" class="${acc===c.toLowerCase()?'on':''}" data-acc="${c}" aria-label="Couleur ${c}"></button>`).join('')}</div>`),
+    accueil:()=>blk('Widget voiture : afficher','',ch('car',[['name','Le nom'],['plate','La plaque'],['photo','Une photo']],R.showCar))+
+      blk('Plaque d\'immatriculation','',`<div class="kv" style="border:0;padding:0"><span class="plate"><span class="eu">F</span><span class="n">EA-846-SL</span><span class="rg"></span></span><button type="button" class="chip" data-toast="Modifier la plaque">Modifier</button></div>`)+
+      blk('Disposition des widgets','Échanger, masquer ou ajouter des widgets sur l\'accueil.',`<div><button type="button" class="btn" data-go="home" data-toast="Appui long sur un widget pour modifier">${ic('sliders')}Modifier l'accueil</button></div>`),
+    carplay:()=>blk('Ouvrir CarPlay automatiquement','Au démarrage, un bandeau laisse 5 secondes pour annuler.',ch('cp',[['off','Jamais'],['boot','Au démarrage']],R.autoCP))+
+      blk('Applis liées','Détectées automatiquement. Touchez pour en choisir une autre.',`<button type="button" class="kv" style="width:100%" data-toast="Choisir l'appli CarPlay"><span>CarPlay</span><b>ZLink ›</b></button><button type="button" class="kv" style="width:100%" data-toast="Choisir l'appli radio"><span>Radio</span><b>Radio FM ›</b></button>`),
+    barre:()=>blk('Boutons affichés','CarPlay, Accueil, Suivi et Applis restent toujours visibles.',tg('sFuel','Carburant',R.sFuel)+tg('sPark','Parking',R.sPark)),
+    suivi:()=>blk('Carburant de la voiture','Utilisé pour le widget et l\'écran Carburant.',ch('fuel',[['gazole','Gazole'],['e10','SP95-E10'],['sp98','SP98'],['e85','E85'],['gplc','GPLc']],R.fuelType))+
+      blk('Volume du plein','Pour le calcul du prix d\'un plein.',ch('tank',[[40,'40 L'],[45,'45 L'],[50,'50 L']],R.tank))+
+      blk('Historique','Exporter tous les relevés et entretiens en fichier CSV.',`<div><button type="button" class="btn" data-toast="Export CSV">${ic('download')}Exporter (CSV)</button></div>`),
+    systeme:()=>blk('Android','Pour retrouver l\'écran du fabricant ou tous les réglages d\'Android.',`<div class="btns"><button type="button" class="btn" data-toast="Ouverture des paramètres Android">${ic('android')}Paramètres Android</button><button type="button" class="btn" data-toast="Ouverture de l'interface d'origine">${ic('home')}Interface d'origine</button></div><div><button type="button" class="btn" data-toast="Choix de l'écran d'accueil par défaut">Changer l'écran d'accueil par défaut</button></div>`)+
+      blk('Tout réinitialiser','Remet les réglages et efface le suivi.',`<div><button type="button" class="btn" style="color:var(--bad)" data-toast="Appuyez encore pour confirmer">Réinitialiser</button></div>`),
+    apropos:()=>blk('Clio Home','Version 0.2',`<div><div class="kv"><span>Autoradio</span><b>AWESAFE PX9</b></div><div class="kv"><span>Processeur</span><b>MT8163 · 2 Go</b></div><div class="kv"><span>Android</span><b>13</b></div><div class="kv"><span>Boîtier CAN</span><b>Raise · Renault</b></div><div class="kv"><span>Écran</span><b>1280 × 720</b></div></div>`)
+  };
+  const cur=STABS.find(t=>t[0]===R.sTab)||STABS[0];
+  return `<div class="cols" style="grid-template-columns:.8fr 1.6fr">
+    ${f(`<div class="scroll">${STABS.map(t=>`<button type="button" class="srow ${t[0]===cur[0]?'on':''}" data-stab="${t[0]}">${ic(t[2])}<span>${t[1]}</span><b>›</b></button>`).join('')}</div>`,'card')}
+    ${f(`<div class="lbl">${ic(cur[2])}${cur[1]}</div><div class="scroll">${P[cur[0]]()}</div>`,'card')}
+  </div>`;
 }
 function setAcc(c){const d=$('dev');d.style.setProperty('--accent',c);const n=parseInt(c.slice(1),16),l=(0.299*(n>>16&255)+0.587*(n>>8&255)+0.114*(n&255))/255;d.style.setProperty('--on-accent',l>.6?'#0B0C0E':'#FFFFFF');sw();render();}
 const S={home,maint,fuel,park,apps,carplay,settings,weather:home};
@@ -353,7 +380,7 @@ function render(){side();status();$('screen').innerHTML=S[R.screen]();tick();}
 function tick(){
   const d=new Date();
   document.querySelectorAll('[data-clock]').forEach(e=>e.textContent=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
-  document.querySelectorAll('[data-date]').forEach(e=>e.textContent=d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}).toUpperCase());
+  document.querySelectorAll('[data-date]').forEach(e=>e.textContent=(s=>R.font==='normal'?s:s.toUpperCase())(d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})));
 }
 setInterval(tick,1000);
 setInterval(()=>{R.speed=Math.max(0,Math.min(120,R.speed+Math.round((Math.random()-.48)*6)));
@@ -373,8 +400,12 @@ $('dev').addEventListener('click',e=>{
     if(k==='mode'){$('dev').dataset.mode=v==='auto'?'nuit':v;$('b-mode').textContent=$('dev').dataset.mode==='nuit'?'Passer en mode Jour':'Passer en mode Nuit';if(v==='auto')toast('Auto : Nuit en ce moment');}
     if(k==='car'){R.showCar=v==='photo'?'name':v;if(v==='photo')toast('Choix d\'une photo dans la galerie');}
     if(k==='cp')R.autoCP=v;
+    if(k==='font'){R.font=v;$('dev').dataset.font=v;}
+    if(k==='fuel')R.fuelType=v;
+    if(k==='tank')R.tank=+v;
     if(k==='sFuel'||k==='sPark')R[k]=v==='1';
     render();return;}
+  const tb=e.target.closest('[data-stab]');if(tb){R.sTab=tb.dataset.stab;render();return;}
   const t=e.target.closest('[data-toast]');if(t)toast(t.dataset.toast);
 });
 $('b-mode').onclick=e=>{const d=$('dev');d.dataset.mode=d.dataset.mode==='nuit'?'acier':'nuit';e.target.textContent=d.dataset.mode==='nuit'?'Passer en mode Jour':'Passer en mode Nuit';render();};
