@@ -328,7 +328,7 @@ private fun MainActivity.parkWidget() = box {
     if (p == null) {
         addView(head("Stationnement", R.drawable.ic_park))
         addView(grow(tv("Notez l'heure d'arrivée et la durée autorisée.", 17, Pal.muted).apply { gravity = Gravity.CENTER_VERTICAL }))
-        addView(btn("Je me gare", R.drawable.ic_park, Btn.ACCENT) { if (!edit) parkNow() })
+        addView(btn("Je me gare", 0, Btn.ACCENT) { if (!edit) parkNow() }.apply { setPadding(px(12), 0, px(12), 0) })
     } else {
         addView(head("Garé à ${p.at}", R.drawable.ic_park))
         val big = BigText(context).apply { maxSize = 60f; text = p.big; color = if (p.lv > 0) Pal.level(p.lv) else Pal.fg }

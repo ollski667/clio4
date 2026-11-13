@@ -376,6 +376,26 @@ class MainActivity : Activity() {
 
     private var pendingDiag = ""
 
+    /** Sauvegarde complète sur clé USB ou dans la mémoire de l'autoradio. */
+    fun backupData() {
+        val name = "clio-home-sauvegarde-" + SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE).format(Date()) + ".json"
+        try {
+            startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json").putExtra(Intent.EXTRA_TITLE, name), REQ_BACKUP)
+        } catch (e: Exception) {
+            val dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: filesDir
+            val f = File(dir, name); f.writeText(st.exportJson(photoBytes()))
+            toast("Sauvegarde enregistrée : " + f.path)
+        }
+    }
+
+    fun restoreData() {
+        try {
+            startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*"), REQ_RESTORE)
+        } catch (e: Exception) { toast("Aucune appli pour choisir un fichier") }
+    }
+
+    private fun photoBytes(): ByteArray? = File(filesDir, "car.jpg").let { if (it.exists()) it.readBytes() else null }
+
     fun exportDiag(text: String) {
         pendingDiag = text
         try {
@@ -405,6 +425,18 @@ class MainActivity : Activity() {
         val uri: Uri = data?.data ?: return
         if (resultCode != RESULT_OK) return
         if (requestCode == REQ_PHOTO) savePhoto(uri)
+        if (requestCode == REQ_BACKUP) {
+            try { contentResolver.openOutputStream(uri)?.use { it.write(st.exportJson(photoBytes()).toByteArray(Charsets.UTF_8)) }; toast("Sauvegarde enregistrée") }
+            catch (e: Exception) { toast("Impossible d'enregistrer la sauvegarde") }
+        }
+        if (requestCode == REQ_RESTORE) {
+            try {
+                val text = contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) } ?: ""
+                val photo = st.importJson(text)
+                val f = File(filesDir, "car.jpg"); if (photo != null) f.writeBytes(photo) else f.delete()
+                toast("Données restaurées"); render()
+            } catch (e: Exception) { toast("Ce fichier n'est pas une sauvegarde Clio Home") }
+        }
         if (requestCode == REQ_DIAG) {
             try { contentResolver.openOutputStream(uri)?.use { it.write(pendingDiag.toByteArray(Charsets.UTF_8)) }; toast("Diagnostic enregistré") }
             catch (e: Exception) { toast("Impossible d'enregistrer le fichier") }
@@ -437,5 +469,7 @@ class MainActivity : Activity() {
         const val REQ_PHOTO = 10
         const val REQ_CSV = 11
         const val REQ_DIAG = 12
+        const val REQ_BACKUP = 13
+        const val REQ_RESTORE = 14
     }
 }

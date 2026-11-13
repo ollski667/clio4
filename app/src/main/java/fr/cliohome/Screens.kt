@@ -556,6 +556,13 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
                     }
                 })
             }),
+            blk("Sauvegarde", "Vos données (kilométrage, entretiens, historique, réglages, photo) sont conservées à chaque mise à jour. Une copie sur clé USB les protège aussi en cas de réinstallation ou de nouvel autoradio.",
+                row(10) {
+                    addView(btn("Sauvegarder", R.drawable.ic_download) { backupData() })
+                    addView(btn(if (armed == "restore") "Confirmer : remplacer mes données" else "Restaurer", style = if (armed == "restore") Btn.DANGER_ARMED else Btn.PLAIN) {
+                        if (armed != "restore") { armed = "restore"; render() } else { armed = null; render(); restoreData() }
+                    })
+                }),
             blk("Android", "Pour retrouver l'écran du fabricant ou tous les réglages d'Android.",
                 row(10) {
                     addView(btn("Paramètres Android", R.drawable.ic_android) { sys.openAndroidSettings() })
@@ -603,4 +610,4 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
     }
 }
 
-object BuildInfo { const val version = "0.6" }
+object BuildInfo { const val version = "0.6.1" }

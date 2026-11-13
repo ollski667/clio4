@@ -122,6 +122,36 @@ class Store(ctx: Context) {
 
     fun resetAll() { p.edit().clear().apply() }
 
+    /** Copie de toutes les données (réglages, kilométrage, entretiens, historique) au format JSON. */
+    fun exportJson(photo: ByteArray?): String {
+        val data = JSONObject()
+        for ((k, v) in p.all) {
+            val t = when (v) { is Int -> "i"; is Long -> "l"; is Float -> "f"; is Boolean -> "b"; else -> "s" }
+            data.put(k, JSONObject().put("t", t).put("v", v))
+        }
+        val o = JSONObject().put("app", "Clio Home").put("format", 1).put("date", today()).put("data", data)
+        if (photo != null) o.put("photo", android.util.Base64.encodeToString(photo, android.util.Base64.NO_WRAP))
+        return o.toString(1)
+    }
+
+    /** Restaure une copie faite par exportJson. Renvoie la photo à réécrire, ou null. Lève une erreur si le fichier n'est pas une sauvegarde. */
+    fun importJson(s: String): ByteArray? {
+        val o = JSONObject(s)
+        require(o.optString("app") == "Clio Home") { "pas une sauvegarde Clio Home" }
+        val data = o.getJSONObject("data")
+        val e = p.edit().clear()
+        for (k in data.keys()) {
+            val it = data.getJSONObject(k)
+            when (it.getString("t")) {
+                "i" -> e.putInt(k, it.getInt("v")); "l" -> e.putLong(k, it.getLong("v"))
+                "f" -> e.putFloat(k, it.getDouble("v").toFloat()); "b" -> e.putBoolean(k, it.getBoolean("v"))
+                else -> e.putString(k, it.getString("v"))
+            }
+        }
+        e.apply()
+        return if (o.has("photo")) android.util.Base64.decode(o.getString("photo"), android.util.Base64.NO_WRAP) else null
+    }
+
     companion object {
         fun today(): String = SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE).format(Date())
         fun newId() = "i" + System.currentTimeMillis() + (0..999).random()
