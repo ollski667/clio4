@@ -1,0 +1,340 @@
+<title>Clio Home Acier</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: dark bench showing the 1280x720 head unit, faceted steel panels on a 4x2 grid, light bar across the top edge */
+:root{
+  --page:#060708; --page-fg:#DDE1E5; --page-muted:#858C94; --page-line:#1E2226; --page-card:#0F1113;
+  --display:'Chakra Petch','Barlow',system-ui,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:dark;
+}
+html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
+.wrap{max-width:1340px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 40px;display:flex;flex-direction:column;gap:20px}
+.top h1{font:500 22px/1.2 var(--display);letter-spacing:.14em;text-transform:uppercase;margin:0}
+.top p{margin:8px 0 0;color:var(--page-muted);max-width:72ch;line-height:1.55;font-size:14.5px}
+.stage{position:relative;width:100%}
+.panels{display:grid;grid-template-columns:1fr 1.3fr;gap:16px}
+@media (max-width:820px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--page-card);border:1px solid var(--page-line);padding:18px 20px;min-width:0;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)}
+.panel h2{font:500 12px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--page-muted);margin:0 0 12px}
+.panel ul{margin:0;padding-left:18px;line-height:1.6;font-size:14px}
+.panel li span{color:var(--page-muted)}
+.sim{display:flex;flex-wrap:wrap;gap:8px}
+.sim button{font:500 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--page-fg);background:#16191C;border:1px solid #2A2F34;padding:10px 14px;cursor:pointer;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+.sim button:hover{border-color:#4A5058}
+.sim button:focus-visible,.dev button:focus-visible{outline:2px solid #DDE1E5;outline-offset:2px}
+
+/* ===== Head unit ===== */
+.dev{
+  /* NUIT (default) */
+  --bg:#08090A; --fg:#E8EBEE; --muted:#7A8189; --dim:#454B52;
+  --panel:#121417; --panel2:#1A1D21; --edge-hi:#646B74; --edge-lo:#1E2125;
+  --brush:rgba(255,255,255,.018);
+  --steel:linear-gradient(112deg,#8C939B 0%,#E3E7EA 32%,#9AA1A8 55%,#D2D6DA 78%,#8A9198 100%);
+  --on-steel:#0B0C0E;
+  --light:#F3F6F9; --glow:rgba(225,236,247,.55);
+  --ok:#62D18E; --warn:#F0A43C; --bad:#FF4B3E;
+  position:absolute;top:0;left:0;width:1280px;height:720px;transform-origin:0 0;
+  background:
+    repeating-linear-gradient(90deg,var(--brush) 0 1px,transparent 1px 4px),
+    linear-gradient(162deg,color-mix(in srgb,var(--bg) 92%,#fff 8%),var(--bg) 46%);
+  background-color:var(--bg);color:var(--fg);font-family:var(--body);
+  display:grid;grid-template-columns:132px 1fr;overflow:hidden;
+  box-shadow:0 0 0 12px #000,0 0 0 13px #24282D;user-select:none;-webkit-user-select:none;
+}
+.dev[data-mode="acier"]{
+  --bg:#B9BEC3; --fg:#0E1012; --muted:#4A5158; --dim:#8D949B;
+  --panel:#D3D7DB; --panel2:#C4C9CE; --edge-hi:#F7F9FA; --edge-lo:#8F969D;
+  --brush:rgba(255,255,255,.22);
+  --steel:linear-gradient(112deg,#3A3F45 0%,#6B727A 32%,#2E3338 58%,#565D64 100%);
+  --on-steel:#F2F4F6;
+  --light:#0E1012; --glow:rgba(14,16,18,.25);
+  --ok:#1C7E41; --warn:#9A5B00; --bad:#C2271A;
+}
+:where(.dev button){font-family:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+.dev svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:square;stroke-linejoin:miter;flex:none}
+
+/* light bar along the top edge */
+.lightbar{position:absolute;top:0;left:0;right:0;height:3px;background:var(--light);box-shadow:0 0 14px 2px var(--glow),0 0 40px 4px color-mix(in srgb,var(--glow) 40%,transparent);z-index:4}
+
+/* faceted frame: outer layer = edge gradient, inner = panel, both chamfered */
+.f{--c:16px;position:relative;padding:1px;background:linear-gradient(135deg,var(--edge-hi),var(--edge-lo) 38%,var(--edge-lo) 70%,color-mix(in srgb,var(--edge-hi) 55%,var(--edge-lo)));
+   clip-path:polygon(var(--c) 0,100% 0,100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,0 100%,0 var(--c))}
+.f>.in{height:100%;box-sizing:border-box;
+   background:repeating-linear-gradient(90deg,var(--brush) 0 1px,transparent 1px 3px),linear-gradient(170deg,var(--panel2),var(--panel) 55%);
+   clip-path:polygon(calc(var(--c) - .5px) 0,100% 0,100% calc(100% - var(--c) + .5px),calc(100% - var(--c) + .5px) 100%,0 100%,0 calc(var(--c) - .5px))}
+
+/* sidebar */
+.side{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 0 14px;border-right:1px solid var(--edge-lo);position:relative}
+.nav{width:108px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--muted);font:500 12.5px var(--display);letter-spacing:.14em;text-transform:uppercase;position:relative}
+.nav svg{width:32px;height:32px}
+.nav.on{color:var(--fg)}
+.nav.on::before{content:"";position:absolute;left:-12px;top:16px;bottom:16px;width:3px;background:var(--light);box-shadow:0 0 10px var(--glow)}
+.nav.on .ico{filter:drop-shadow(0 0 6px var(--glow))}
+.cp{width:112px;height:100px;margin-bottom:10px;color:var(--on-steel);font:600 14px var(--display);letter-spacing:.16em;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 1px,transparent 1px 3px),var(--steel);
+    clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}
+.cp svg{width:40px;height:40px}
+.side .fill{flex:1}
+
+/* main */
+.main{position:relative;display:flex;flex-direction:column;gap:14px;padding:20px 22px 20px 18px;min-width:0;min-height:0}
+.status{height:40px;display:flex;align-items:center;gap:22px;flex:none}
+.ttl{flex:1;font:500 22px var(--display);letter-spacing:.22em;text-transform:uppercase}
+.st{display:flex;align-items:center;gap:6px;color:var(--muted);font:500 15px var(--display);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.st svg{width:21px;height:21px}
+.st.off{opacity:.35}
+.clock{font:400 26px var(--display);letter-spacing:.06em;color:var(--fg);font-variant-numeric:tabular-nums}
+.chip{display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;font:500 13px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);
+      background:var(--panel2);border:1px solid var(--edge-lo);clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+.chip svg{width:18px;height:18px}
+.chip.on{background:var(--steel);color:var(--on-steel);border-color:transparent}
+
+.screen{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:14px}
+.s2{grid-column:span 2}
+.w{padding:20px 22px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-width:0;container-type:size;overflow:hidden}
+.tap{cursor:pointer}
+.lbl{font:500 12px var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:9px}
+.lbl svg{width:17px;height:17px}
+.lbl .r{margin-left:auto;letter-spacing:.06em;color:var(--fg);font-size:14px}
+.big{font:300 min(var(--fs,80px),38cqh,var(--cw,34cqw))/.92 var(--display);letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.unit{font:500 18px var(--display);letter-spacing:.14em;color:var(--muted);margin-left:8px;text-transform:uppercase}
+.sub{color:var(--muted);font-size:15px;line-height:1.35}
+.sub b{color:var(--fg);font-weight:500}
+.tag{font:500 10px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border:1px solid var(--dim);padding:2px 6px}
+
+/* segmented gauge (angled cells) */
+.segbar{display:flex;gap:3px;height:12px}
+.segbar i{flex:1;transform:skewX(-24deg);background:color-mix(in srgb,var(--dim) 45%,transparent)}
+.segbar i.on{background:var(--fg)}
+.segbar.ok i.on{background:var(--ok)} .segbar.warn i.on{background:var(--warn)} .segbar.bad i.on{background:var(--bad)}
+.segbar.thin{height:7px;gap:2px}
+
+.st-pill{font:500 12.5px var(--display);letter-spacing:.08em;white-space:nowrap;font-variant-numeric:tabular-nums;padding:3px 9px;border:1px solid currentColor}
+.st-pill.ok{color:var(--ok)} .st-pill.warn{color:var(--warn)} .st-pill.bad{color:var(--bad)}
+
+/* car tile */
+.carname{font:300 min(84px,30cqh) var(--display);letter-spacing:.14em;text-transform:uppercase;line-height:1}
+.carsub{font:500 14px var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.carline{width:100%;height:auto;max-height:46cqh;color:var(--fg);opacity:.9}
+.plate{display:inline-flex;align-items:stretch;height:26px;background:#fff;color:#111;border:1.5px solid #111;letter-spacing:.08em}
+.plate .eu,.plate .rg{background:#1D4FB8;color:#fff;width:15px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;font:700 9px var(--body);letter-spacing:0}
+.plate .rg{width:11px}
+.plate .n{padding:0 9px;display:flex;align-items:center;font:600 15px var(--display)}
+
+/* lists */
+.cols{flex:1;min-height:0;display:grid;grid-template-columns:1.45fr 1fr;gap:14px}
+.card{padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.scroll{overflow:auto;min-height:0;flex:1;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:center;padding:14px 10px;border-bottom:1px solid var(--edge-lo);cursor:pointer;width:100%;text-align:left}
+.row.sel{background:color-mix(in srgb,var(--fg) 6%,transparent);box-shadow:inset 3px 0 0 var(--light)}
+.row .n{font:500 17px var(--body)}
+.row .d{font-size:14px;color:var(--muted)}
+.row .segbar{grid-column:1/-1}
+.kv{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--edge-lo);font-size:15px}
+.kv span{color:var(--muted)}
+.kv b{font:500 17px var(--display);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{height:48px;padding:0 20px;display:flex;align-items:center;gap:9px;font:600 14px var(--display);letter-spacing:.14em;text-transform:uppercase;background:var(--panel2);border:1px solid var(--edge-lo);color:var(--fg);
+     clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.btn svg{width:19px;height:19px}
+.btn.steel{background:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 1px,transparent 1px 3px),var(--steel);color:var(--on-steel);border-color:transparent}
+.price{font:300 30px var(--display);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.price small{font-size:13px;color:var(--muted);letter-spacing:.12em;margin-left:5px}
+
+.apps{display:grid;grid-template-columns:repeat(6,1fr);gap:24px 14px;align-content:start}
+.app{display:flex;flex-direction:column;align-items:center;gap:11px;font:500 13px var(--display);letter-spacing:.08em;text-transform:uppercase;text-align:center}
+.app .f{--c:12px;width:78px;height:78px}
+.app .in{display:flex;align-items:center;justify-content:center;color:var(--fg)}
+.app svg{width:32px;height:32px}
+
+.toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:6;background:var(--fg);color:var(--bg);padding:12px 22px;font:500 14px var(--display);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+[hidden]{display:none!important}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <h1>Clio Home · Acier</h1>
+    <p>Proposition de nouveau style pour l'autoradio de la Clio : panneaux à angles coupés, acier brossé, barre de lumière en haut de l'écran, typographie anguleuse. Tout se touche. Le mode « Acier » est la version de jour, « Nuit » la version sombre.</p>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="dev" id="dev" data-mode="nuit">
+      <div class="lightbar"></div>
+      <nav class="side" id="side"></nav>
+      <div class="main">
+        <div class="status" id="status"></div>
+        <div class="screen" id="screen"></div>
+        <div class="toast" id="toast" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <h2>Essayer</h2>
+      <div class="sim">
+        <button id="b-mode" type="button">Passer en mode Acier (jour)</button>
+        <button id="b-car" type="button">Voiture : afficher la plaque seule</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Ce qui change par rapport à la version actuelle</h2>
+      <ul>
+        <li>Même contenu et mêmes écrans. <span>Seul le style change, l'appli reste aussi légère.</span></li>
+        <li>Coins coupés à la place des coins arrondis, reflets d'acier brossé, barre de lumière en haut.</li>
+        <li>Jauges en segments inclinés pour la vitesse, l'entretien et le stationnement.</li>
+        <li>Valeurs d'exemple : météo, prix et entretiens ne sont pas vos vraies données.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const I={
+  home:'<path d="M3 11l9-7 9 7v10h-6v-6H9v6H3z"/>',
+  carplay:'<path d="M3 4h18v13H3z"/><path d="M10 8v5l4.5-2.5z"/><path d="M8 21h8M12 17v4"/>',
+  wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+  fuel:'<path d="M4 21V3h10v18"/><path d="M3 21h12M4 10h10"/><path d="M14 8h3v9h3V8l-3-3"/>',
+  radio:'<path d="M3 8h18v12H3z"/><path d="M7 8l10-5"/><path d="M6 12h4v4H6z"/><path d="M14 12h4M14 16h4"/>',
+  grid:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>',
+  bt:'<path d="M7 7l10 10-5 4V3l5 4L7 17"/>',
+  wifi:'<path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><path d="M11.5 19h1"/>',
+  vol:'<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  sun:'<path d="M8 8h8v8H8z"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+  gauge:'<path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/>',
+  thermo:'<path d="M10 14V3h4v11a4 4 0 1 1-4 0z"/>',
+  park:'<path d="M4 3h16v18H4z"/><path d="M10 17V7h3a3 3 0 0 1 0 6h-3"/>',
+  sliders:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><path d="M14 4h4v4h-4zM8 10h4v4H8zM16 16h4v4h-4z"/>',
+  android:'<path d="M5 9h14v10H5z"/><path d="M8 9a4 4 0 0 1 8 0M8 5l1.5 2M16 5l-1.5 2"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  music:'<path d="M9 18V6l10-2v12"/><path d="M4 16h5v4H4zM14 14h5v4h-5z"/>',
+  folder:'<path d="M3 5h6l2 2h10v12H3z"/>',
+  globe:'<path d="M3 12h18M12 3l5 9-5 9-5-9z"/><path d="M3 3h18v18H3z" opacity=".0"/>'
+};
+const ic=(n,st)=>`<svg viewBox="0 0 24 24"${st?` style="${st}"`:''}>${I[n]}</svg>`;
+const $=id=>document.getElementById(id);
+const nf=n=>n.toLocaleString('fr-FR');
+const f=(inner,cls='',st='')=>{const c=cls.split(' ').filter(Boolean),o=c.filter(x=>x==='s2'||x==='tap').join(' '),n=c.filter(x=>x!=='s2'&&x!=='tap').join(' ');return `<div class="f ${o}"${st?` style="${st}"`:''}><div class="in ${n}">${inner}</div></div>`;};
+const seg=(n,on,cls='')=>`<div class="segbar ${cls}">${Array.from({length:n},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div>`;
+
+const R={screen:'home',speed:52,showCar:'name',sel:0,parkAt:Date.now()-38*60000,parkLim:60};
+const ODO=98450;
+const items=[
+  {n:'Liquide de frein',e:'24 mois',r:.99,lv:'warn',t:'8 j',due:'20 nov. 2026',last:'20 nov. 2024'},
+  {n:'Contrôle technique',e:'24 mois',r:.97,lv:'warn',t:'23 j',due:'5 déc. 2026',last:'5 déc. 2024'},
+  {n:'Vidange + filtre à huile',e:'20 000 km ou 12 mois',r:.68,lv:'ok',t:'6 550 km · 4 mois',due:'105 000 km ou 10 mars 2027',last:'85 000 km · 10 mars 2026'},
+  {n:"Filtre d'habitacle",e:'20 000 km ou 12 mois',r:.68,lv:'ok',t:'6 550 km · 4 mois',due:'105 000 km ou 10 mars 2027',last:'85 000 km · 10 mars 2026'},
+  {n:'Filtre à air',e:'40 000 km ou 24 mois',r:.66,lv:'ok',t:'13 550 km · 6 mois',due:'112 000 km ou 22 mai 2027',last:'72 000 km · 22 mai 2025'},
+  {n:'Courroie de distribution',e:'120 000 km ou 72 mois',r:.76,lv:'ok',t:'81 550 km · 17 mois',due:'180 000 km ou 15 avr. 2028',last:'60 000 km · 15 avr. 2022'}
+];
+const stations=[['Rue Anatole France','Villeurbanne',2.1,1.979],['Bd Laurent Bonnevay','Bron',4.5,1.989],['Route de Grenoble','Saint-Priest',8.7,1.989],['Av. Franklin Roosevelt','Vaulx-en-Velin',6.3,1.999],['Cours Émile Zola','Villeurbanne',3.2,2.019]];
+
+function side(){
+  const N=[['home','Accueil','home'],['maint','Suivi','wrench'],['fuel','Carburant','fuel'],['park','Parking','park'],['_'],['apps','Applis','grid']];
+  $('side').innerHTML=`<button type="button" class="cp nav" data-go="carplay">${ic('carplay')}CarPlay</button>`+
+    N.map(n=>n[0]==='_'?'<div class="fill"></div>':`<button type="button" class="nav ${R.screen===n[0]?'on':''}" data-go="${n[0]}"><span class="ico">${ic(n[2])}</span>${n[1]}</button>`).join('');
+}
+const T={home:'Accueil',maint:'Suivi',fuel:'Carburant',park:'Stationnement',apps:'Applications',carplay:'CarPlay'};
+function status(){
+  const night=$('dev').dataset.mode==='nuit';
+  $('status').innerHTML=`<div class="ttl">${T[R.screen]}</div>
+    ${R.screen==='home'?`<button type="button" class="chip">${ic('sliders')}Modifier</button>`:''}
+    <span class="st">${ic('bt')}</span><span class="st">${ic('wifi')}</span>
+    <span class="st">${ic('vol')}14</span><span class="st">${ic(night?'moon':'sun')}</span>
+    <span class="st" data-date></span><span class="clock" data-clock></span>`;
+}
+function parkInfo(){
+  const now=Date.now(),rem=Math.ceil((R.parkAt+R.parkLim*60000-now)/60000);
+  const hm=t=>new Date(t).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const lv=rem<=0?'bad':rem<=10?'warn':'ok';
+  return{at:hm(R.parkAt),end:hm(R.parkAt+R.parkLim*60000),rem,lv,r:Math.min(1,(now-R.parkAt)/(R.parkLim*60000)),
+    big:rem<=0?'+'+(-rem)+' min':rem>=60?Math.floor(rem/60)+' h '+String(rem%60).padStart(2,'0'):rem+' min'};
+}
+const CAR_SVG=`<svg class="carline" viewBox="0 0 420 120"><path d="M14 92V76l14-8 70-8 44-30 52-10h70l38 12 52 30 38 6 10 12v12z" stroke-width="2.2"/><path d="M146 58l38-26 36-6v32zM232 26h60l30 32h-90z" stroke-width="1.6"/><path d="M60 92a26 26 0 0 1 52 0M300 92a26 26 0 0 1 52 0" stroke-width="2.2"/><path d="M14 98h392" stroke-width="1" opacity=".4"/></svg>`;
+
+function home(){
+  const p=parkInfo();
+  const top=items.slice(0,3);
+  return `<div class="grid">
+    ${f(`<div class="lbl">Ma Clio <span class="plate"><span class="eu">F</span><span class="n">EA-846-SL</span><span class="rg"></span></span><span class="r">${nf(ODO)} KM</span></div>
+      ${R.showCar==='name'?`<div><div class="carname">Clio&nbsp;4</div><div class="carsub" style="margin-top:10px">Phase 2 · 1.5 dCi · 2016</div></div>${CAR_SVG}`:`<div style="display:flex;align-items:center;justify-content:center;flex:1"><span class="plate" style="height:64px;transform:scale(1)"><span class="eu" style="width:34px;font-size:18px">F</span><span class="n" style="font-size:44px;padding:0 22px">EA-846-SL</span><span class="rg" style="width:26px"></span></span></div>`}`,'w s2')}
+    ${f(`<div class="lbl">${ic('gauge')}Vitesse</div><div class="big" style="--fs:110px"><span data-speed>${R.speed}</span><span class="unit">km/h</span></div><div data-speedbar>${seg(18,Math.round(R.speed/130*18))}</div>`,'w')}
+    ${f(`<div class="lbl">${ic('thermo')}Extérieur<span class="tag" style="margin-left:auto">exemple</span></div><div class="big" style="--fs:96px">9°</div><div class="sub"><b>Couvert</b> · 7° / 13°<br>Pluie possible vers 17 h</div>`,'w tap','" data-go="weather')}
+    ${f(`<div class="lbl">${ic('wrench')}Entretien<span class="r">${nf(ODO)} KM</span></div>`+top.map(it=>`<div style="display:flex;flex-direction:column;gap:7px"><div style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500">${it.n}<span class="st-pill ${it.lv}" style="margin-left:auto">${it.t}</span></div>${seg(30,Math.round(it.r*30),'thin '+it.lv)}</div>`).join(''),'w s2 tap','" data-go="maint')}
+    ${f(`<div class="lbl">${ic('park')}Garé à ${p.at}</div><div><div class="big" style="--fs:60px;--cw:22cqw;color:var(--${p.lv==='ok'?'fg':p.lv})" data-prem>${p.big}</div><div class="sub" style="margin-top:6px">${p.rem<=0?'de dépassement':'restantes'} · jusqu'à <b>${p.end}</b></div></div><div data-pbar>${seg(14,Math.round(p.r*14),p.lv)}</div>`,'w tap','" data-go="park')}
+    ${f(`<div class="lbl">${ic('fuel')}Gazole<span class="tag" style="margin-left:auto">exemple</span></div><div><div class="sub">Le moins cher</div><div class="big" style="--fs:64px;--cw:21cqw;margin-top:6px">1,979<span class="unit">€/L</span></div><div class="sub" style="font-size:13px;margin-top:6px">Plein 45 L : <b>89,06 €</b></div></div><div class="sub"><b>Villeurbanne</b> · 2,1 km</div>`,'w tap','" data-go="fuel')}
+  </div>`;
+}
+function maint(){
+  const it=items[R.sel];
+  return `<div style="display:flex;gap:10px"><button type="button" class="chip on">Échéances</button><button type="button" class="chip">Historique et kilométrage</button></div>
+  <div class="cols">
+    ${f(`<div class="lbl">Échéances<span class="r">${nf(ODO)} KM</span></div><div class="scroll">${items.map((x,i)=>`<button type="button" class="row ${i===R.sel?'sel':''}" data-sel="${i}"><div><div class="n">${x.n}</div><div class="d">Tous les ${x.e}</div></div><span class="st-pill ${x.lv}">${x.t}</span>${seg(36,Math.round(x.r*36),'thin '+x.lv)}</button>`).join('')}</div>`,'card')}
+    ${f(`<div class="lbl">Détail</div><div style="font:500 24px var(--display);letter-spacing:.06em">${it.n}</div>
+      <div><div class="kv"><span>Intervalle</span><b>${it.e}</b></div><div class="kv"><span>Dernier</span><b>${it.last}</b></div><div class="kv"><span>Prochaine échéance</span><b>${it.due}</b></div><div class="kv"><span>Reste</span><b style="color:var(--${it.lv})">${it.t}</b></div></div>
+      <div style="flex:1"></div><div class="btns"><button type="button" class="btn steel" data-toast="Marqué comme fait aujourd'hui">${ic('check')}Fait aujourd'hui</button><button type="button" class="btn" data-toast="Export CSV">${ic('download')}Exporter</button></div>`,'card')}
+  </div>`;
+}
+function fuel(){
+  return `<div style="display:flex;gap:10px;flex-wrap:wrap">${['Gazole','SP95-E10','SP98','E85','GPLc'].map((x,i)=>`<button type="button" class="chip ${i===0?'on':''}">${x}</button>`).join('')}<span style="flex:1"></span><button type="button" class="chip on">Moins cher</button><button type="button" class="chip">Plus proche</button></div>
+  ${f(`<div class="lbl">Stations à moins de 10 km<span class="tag" style="margin-left:auto">prix d'exemple</span></div><div class="scroll">${stations.map((s,i)=>`<div class="row" style="cursor:default"><div><div class="n">${s[0]}</div><div class="d">${s[1]} · ${String(s[2]).replace('.',',')} km</div></div><div><div class="price" style="${i===0?'color:var(--ok)':''}">${s[3].toFixed(3).replace('.',',')}<small>€/L</small></div><div class="d" style="text-align:right">Plein 45 L : ${(s[3]*45).toFixed(2).replace('.',',')} €</div></div></div>`).join('')}</div>`,'card','flex:1')}`;
+}
+function park(){
+  const p=parkInfo();
+  return `<div class="cols" style="grid-template-columns:1fr 1fr">
+    ${f(`<div class="lbl">${ic('park')}Durée autorisée</div><div style="display:flex;gap:10px;flex-wrap:wrap">${[['Sans limite',0],['15 min',15],['30 min',30],['1 h',60],['1 h 30',90],['2 h',120],['3 h',180]].map(l=>`<button type="button" class="chip ${R.parkLim===l[1]?'on':''}" data-lim="${l[1]}">${l[0]}</button>`).join('')}</div>
+      <div class="kv"><span>Arrivée</span><b>${p.at}</b></div><div class="kv"><span>Fin autorisée</span><b>${p.end}</b></div><div class="kv"><span>Où</span><b>Parking de la gare, niveau -1</b></div>`,'card')}
+    ${f(`<div class="lbl">Garé à ${p.at}<span class="r">jusqu'à ${p.end}</span></div><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px"><div style="font:300 96px/1 var(--display);color:var(--${p.lv==='ok'?'fg':p.lv})" data-prem>${p.big}</div><div class="sub" style="font-size:18px">${p.rem<=0?'de dépassement':'restantes'}</div><div data-pbar>${seg(24,Math.round(p.r*24),p.lv)}</div></div>
+      <div class="btns"><button type="button" class="btn steel" data-park="now">${ic('park')}Je me gare</button><button type="button" class="btn" data-toast="Stationnement terminé">Je repars</button></div>`,'card')}
+  </div>`;
+}
+function apps(){
+  const A=[['Réglages','sliders'],['ZLink','carplay'],['Paramètres Android','android'],['Interface d\'origine','home'],['Radio','radio'],['Musique','music'],['Fichiers','folder'],['Navigateur','globe'],['Stationnement','park'],['Bluetooth','bt']];
+  return f(`<div class="scroll"><div class="apps">${A.map(a=>`<button type="button" class="app" data-toast="Ouverture : ${a[0]}">${f(ic(a[1]))}${a[0]}</button>`).join('')}</div></div>`,'card','flex:1');
+}
+function carplay(){
+  return `<div style="flex:1;display:flex;align-items:center;justify-content:center"><div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:18px;max-width:560px">
+    <div class="cp" style="width:130px;height:110px;display:flex;align-items:center;justify-content:center">${ic('carplay','width:56px;height:56px')}</div>
+    <div style="font:500 28px var(--display);letter-spacing:.2em;text-transform:uppercase">Ouverture de ZLink</div>
+    <div class="sub">Dans l'appli, ZLink s'ouvre ici en plein écran. Le bouton Accueil de l'autoradio ramène sur Clio Home.</div>
+    <button type="button" class="btn" data-go="home">${ic('home')}Accueil</button></div></div>`;
+}
+const S={home,maint,fuel,park,apps,carplay,weather:home};
+
+function render(){side();status();$('screen').innerHTML=S[R.screen]();tick();}
+function tick(){
+  const d=new Date();
+  document.querySelectorAll('[data-clock]').forEach(e=>e.textContent=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+  document.querySelectorAll('[data-date]').forEach(e=>e.textContent=d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}).toUpperCase());
+}
+setInterval(tick,1000);
+setInterval(()=>{R.speed=Math.max(0,Math.min(120,R.speed+Math.round((Math.random()-.48)*6)));
+  document.querySelectorAll('[data-speed]').forEach(e=>e.textContent=R.speed);
+  document.querySelectorAll('[data-speedbar]').forEach(e=>e.innerHTML=seg(18,Math.round(R.speed/130*18)));},1000);
+
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,1800);}
+
+$('dev').addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');if(g){R.screen=g.dataset.go==='weather'?'home':g.dataset.go;render();if(g.dataset.go==='weather')toast('Prévisions détaillées');return;}
+  const s=e.target.closest('[data-sel]');if(s){R.sel=+s.dataset.sel;render();return;}
+  const l=e.target.closest('[data-lim]');if(l){R.parkLim=+l.dataset.lim||60;render();return;}
+  const p=e.target.closest('[data-park]');if(p){R.parkAt=Date.now();render();toast('Heure de stationnement notée');return;}
+  const t=e.target.closest('[data-toast]');if(t)toast(t.dataset.toast);
+});
+$('b-mode').onclick=e=>{const d=$('dev');d.dataset.mode=d.dataset.mode==='nuit'?'acier':'nuit';e.target.textContent=d.dataset.mode==='nuit'?'Passer en mode Acier (jour)':'Passer en mode Nuit';render();};
+$('b-car').onclick=e=>{R.showCar=R.showCar==='name'?'plate':'name';e.target.textContent=R.showCar==='name'?'Voiture : afficher la plaque seule':'Voiture : afficher le nom';R.screen='home';render();};
+
+function fit(){const st=$('stage'),w=st.clientWidth-26,s=Math.min(1,w/1280),d=$('dev');d.style.transform=`scale(${s})`;d.style.left=((st.clientWidth-1280*s)/2)+'px';d.style.top='13px';st.style.height=(720*s+26)+'px';}
+window.addEventListener('resize',fit);fit();render();
+})();
+</script>
