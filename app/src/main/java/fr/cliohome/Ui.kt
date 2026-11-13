@@ -83,7 +83,7 @@ object Pal {
             ok = 0xFF62D18E.toInt(); warn = 0xFFF0A43C.toInt(); bad = 0xFFFF4B3E.toInt()
             light = 0xFFF3F6F9.toInt(); glow = 0x55E1ECF7
         } else {
-            bg = 0xFFDADFE4.toInt(); fg = 0xFF0E1012.toInt(); muted = 0xFF5A6169.toInt(); dim = 0xFFB4BAC0.toInt()
+            bg = 0xFFEBEEF1.toInt(); fg = 0xFF0E1012.toInt(); muted = 0xFF5A6169.toInt(); dim = 0xFFB4BAC0.toInt()
             surface = 0xFFFFFFFF.toInt(); surface2 = 0xFFF1F3F5.toInt(); line = 0xFFC9D0D6.toInt()
             ok = 0xFF1C7E41.toInt(); warn = 0xFF9A5B00.toInt(); bad = 0xFFC2271A.toInt()
             light = 0xFF0E1012.toInt(); glow = 0x330E1012
