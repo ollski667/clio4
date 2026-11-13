@@ -2,10 +2,11 @@ package fr.cliohome
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.AssetManager
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.Path
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.text.InputType
@@ -20,6 +21,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -35,26 +37,56 @@ object U {
 
 fun px(v: Number) = U.px(v)
 
-/** Palette jour / nuit. Les couleurs sont opaques (mélangées au fond) pour un dessin plus rapide. */
+/**
+ * Polices. « Anguleuse » : Chakra Petch (fournie avec l'appli) en majuscules espacées pour les titres.
+ * « Normale » : la police du système, sans majuscules forcées.
+ */
+object Fonts {
+    var angular = true
+    private val cache = HashMap<String, Typeface>()
+    private var assets: AssetManager? = null
+
+    fun init(a: AssetManager) { assets = a }
+
+    private fun chakra(weight: Int): Typeface {
+        val name = when { weight <= 350 -> "Light"; weight <= 450 -> "Regular"; weight <= 550 -> "Medium"; else -> "SemiBold" }
+        return cache.getOrPut(name) {
+            try { Typeface.createFromAsset(assets, "fonts/ChakraPetch-$name.ttf") } catch (e: Exception) { font(weight) }
+        }
+    }
+
+    /** Police des titres, chiffres et boutons. */
+    fun display(weight: Int): Typeface = if (angular) chakra(weight) else font(if (weight <= 350) 300 else weight + 100)
+}
+
+fun font(weight: Int): Typeface = when {
+    weight <= 250 -> Typeface.create("sans-serif-thin", Typeface.NORMAL)
+    weight <= 350 -> Typeface.create("sans-serif-light", Typeface.NORMAL)
+    weight <= 450 -> Typeface.create("sans-serif", Typeface.NORMAL)
+    weight <= 650 -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
+    else -> Typeface.create("sans-serif", Typeface.BOLD)
+}
+
+/** Palette jour / nuit. */
 object Pal {
-    var night = false
-    var bg = 0; var fg = 0; var muted = 0; var surface = 0; var surface2 = 0; var line = 0; var side = 0
-    var ok = 0; var warn = 0; var bad = 0; var accent = 0; var onAccent = Color.WHITE
+    var night = true
+    var bg = 0; var fg = 0; var muted = 0; var dim = 0; var surface = 0; var surface2 = 0; var line = 0
+    var ok = 0; var warn = 0; var bad = 0; var accent = 0; var onAccent = Color.WHITE; var light = 0; var glow = 0
 
     fun apply(st: Store, isNight: Boolean) {
         night = isNight
         accent = st.accent
-        onAccent = if (lum(accent) > 0.6) 0xFF101317.toInt() else Color.WHITE
+        onAccent = if (lum(accent) > 0.6) 0xFF0B0C0E.toInt() else Color.WHITE
         if (isNight) {
-            bg = st.bgNight; fg = 0xFFF2F4F7.toInt(); muted = 0xFF8B929C.toInt()
-            surface = mix(bg, Color.WHITE, .065f); surface2 = mix(bg, Color.WHITE, .11f)
-            line = mix(bg, Color.WHITE, .06f); side = mix(bg, Color.BLACK, .25f)
-            ok = 0xFF30D158.toInt(); warn = 0xFFFF9F0A.toInt(); bad = 0xFFFF453A.toInt()
+            bg = 0xFF08090A.toInt(); fg = 0xFFE8EBEE.toInt(); muted = 0xFF7A8189.toInt(); dim = 0xFF454B52.toInt()
+            surface = 0xFF191C20.toInt(); surface2 = 0xFF22262B.toInt(); line = 0xFF2A2F35.toInt()
+            ok = 0xFF62D18E.toInt(); warn = 0xFFF0A43C.toInt(); bad = 0xFFFF4B3E.toInt()
+            light = 0xFFF3F6F9.toInt(); glow = 0x55E1ECF7
         } else {
-            bg = st.bgDay; fg = 0xFF101317.toInt(); muted = 0xFF5F6670.toInt()
-            surface = mix(bg, Color.WHITE, .82f); surface2 = mix(bg, 0xFF101317.toInt(), .07f)
-            line = mix(bg, 0xFF101317.toInt(), .07f); side = mix(bg, Color.WHITE, .45f)
-            ok = 0xFF1E9E48.toInt(); warn = 0xFFC77700.toInt(); bad = 0xFFD92D20.toInt()
+            bg = 0xFFDADFE4.toInt(); fg = 0xFF0E1012.toInt(); muted = 0xFF5A6169.toInt(); dim = 0xFFB4BAC0.toInt()
+            surface = 0xFFFFFFFF.toInt(); surface2 = 0xFFF1F3F5.toInt(); line = 0xFFC9D0D6.toInt()
+            ok = 0xFF1C7E41.toInt(); warn = 0xFF9A5B00.toInt(); bad = 0xFFC2271A.toInt()
+            light = 0xFF0E1012.toInt(); glow = 0x330E1012
         }
     }
 
@@ -68,19 +100,12 @@ object Pal {
     fun lum(c: Int) = (0.299 * Color.red(c) + 0.587 * Color.green(c) + 0.114 * Color.blue(c)) / 255.0
 }
 
-fun font(weight: Int): Typeface = when {
-    weight <= 250 -> Typeface.create("sans-serif-thin", Typeface.NORMAL)
-    weight <= 350 -> Typeface.create("sans-serif-light", Typeface.NORMAL)
-    weight <= 450 -> Typeface.create("sans-serif", Typeface.NORMAL)
-    weight <= 650 -> Typeface.create("sans-serif-medium", Typeface.NORMAL)
-    else -> Typeface.create("sans-serif", Typeface.BOLD)
-}
-
 fun rounded(color: Int, radius: Number, stroke: Int = 0, strokeW: Number = 0, dash: Boolean = false) = GradientDrawable().apply {
     setColor(color)
     cornerRadius = px(radius).toFloat()
     if (stroke != 0) {
-        if (dash) setStroke(px(strokeW), stroke, px(8).toFloat(), px(6).toFloat()) else setStroke(px(strokeW), stroke)
+        val w = max(1, px(strokeW))
+        if (dash) setStroke(w, stroke, px(8).toFloat(), px(6).toFloat()) else setStroke(w, stroke)
     }
 }
 
@@ -88,7 +113,8 @@ fun spacer(size: Int) = GradientDrawable().apply { setColor(Color.TRANSPARENT); 
 
 fun lp(w: Int = MATCH, h: Int = WRAP, weight: Float = 0f) = LinearLayout.LayoutParams(w, h, weight)
 
-fun Context.tv(text: CharSequence = "", size: Number = 16, color: Int = Pal.fg, weight: Int = 400, lines: Int = 0): TextView =
+/** Texte courant (police du système). */
+fun Context.tv(text: CharSequence = "", size: Number = 17, color: Int = Pal.fg, weight: Int = 400, lines: Int = 0): TextView =
     TextView(this).apply {
         this.text = text
         setTextSize(TypedValue.COMPLEX_UNIT_PX, size.toFloat() * U.f)
@@ -98,8 +124,20 @@ fun Context.tv(text: CharSequence = "", size: Number = 16, color: Int = Pal.fg, 
         if (lines > 0) { maxLines = lines; ellipsize = TextUtils.TruncateAt.END }
     }
 
-/** Petit libellé en majuscules, comme les titres de widgets de la maquette. */
-fun Context.label(text: String, color: Int = Pal.muted) = tv(text.uppercase(), 12.5, color, 600, 1).apply { letterSpacing = 0.07f }
+/**
+ * Texte « titre » : police anguleuse en majuscules espacées, ou police normale sans majuscules.
+ * keepCaps : garde les majuscules même en police normale (petits libellés).
+ */
+fun Context.dtv(text: String, size: Number, color: Int = Pal.fg, weight: Int = 500, spacing: Float = .12f, lines: Int = 1, keepCaps: Boolean = false): TextView {
+    val caps = Fonts.angular || keepCaps
+    return tv(if (caps) text.uppercase(Locale.FRANCE) else text, size, color, weight, lines).apply {
+        typeface = Fonts.display(weight)
+        letterSpacing = if (Fonts.angular) spacing else if (keepCaps) .07f else 0f
+    }
+}
+
+/** Petit libellé en majuscules (titres de widgets). */
+fun Context.label(text: String, color: Int = Pal.muted) = dtv(text, 14, color, 500, .16f, keepCaps = true)
 
 fun Context.col(gap: Number = 0, init: LinearLayout.() -> Unit = {}) = LinearLayout(this).apply {
     orientation = LinearLayout.VERTICAL
@@ -123,57 +161,57 @@ fun Context.icon(res: Int, size: Number = 22, color: Int = Pal.fg) = ImageView(t
 
 fun View.onTap(f: () -> Unit): View { isClickable = true; setOnClickListener { f() }; return this }
 
-/** Carte : fond légèrement détaché, coins arrondis. */
+/** Panneau : fond uni, coins arrondis, fin contour. */
+fun panelBg() = rounded(Pal.surface, 20, Pal.line, 1)
+
 fun Context.card(gap: Number = 12, init: LinearLayout.() -> Unit = {}) = col(gap) {
-    background = rounded(Pal.surface, 22, Pal.line, 1)
+    background = panelBg()
     setPadding(px(20), px(18), px(20), px(18))
     init()
 }
 
 enum class Btn { PLAIN, ACCENT, DANGER, DANGER_ARMED }
 
-fun Context.btn(text: String, iconRes: Int = 0, style: Btn = Btn.PLAIN, height: Number = 46, size: Number = 15, onClick: () -> Unit): LinearLayout {
-    val (bgc, fgc) = when (style) {
-        Btn.ACCENT -> Pal.accent to Pal.onAccent
-        Btn.DANGER -> Pal.surface2 to Pal.bad
-        Btn.DANGER_ARMED -> Pal.bad to Color.WHITE
-        Btn.PLAIN -> Pal.surface2 to Pal.fg
-    }
-    return row(8) {
+fun Context.btn(text: String, iconRes: Int = 0, style: Btn = Btn.PLAIN, height: Number = 48, size: Number = 16, onClick: () -> Unit): LinearLayout {
+    val fgc = when (style) { Btn.ACCENT -> Pal.onAccent; Btn.DANGER -> Pal.bad; Btn.DANGER_ARMED -> Color.WHITE; Btn.PLAIN -> Pal.fg }
+    return row(9) {
         gravity = Gravity.CENTER
-        background = rounded(bgc, 12)
-        setPadding(px(18), 0, px(18), 0)
+        background = when (style) {
+            Btn.ACCENT -> rounded(Pal.accent, 12)
+            Btn.DANGER_ARMED -> rounded(Pal.bad, 12)
+            else -> rounded(Pal.surface2, 12, Pal.line, 1)
+        }
+        setPadding(px(20), 0, px(20), 0)
         minimumHeight = px(height)
         if (iconRes != 0) addView(icon(iconRes, 20, fgc))
-        addView(tv(text, size, fgc, 600, 1))
+        addView(dtv(text, size, fgc, 600, .14f))
         onTap(onClick)
     }
 }
 
-/** Groupe de boutons exclusifs (segmented control). */
-fun Context.seg(options: List<Pair<String, String>>, selected: String, onPick: (String) -> Unit) = row(2) {
-    background = rounded(Pal.surface2, 12)
-    setPadding(px(3), px(3), px(3), px(3))
-    for ((value, text) in options) {
-        val on = value == selected
-        addView(tv(text, 14, if (on) Pal.onAccent else Pal.muted, 500, 1).apply {
-            gravity = Gravity.CENTER
-            setPadding(px(14), 0, px(14), 0)
-            minHeight = px(38)
-            if (on) background = rounded(Pal.accent, 10)
-            onTap { onPick(value) }
-        })
-    }
+/** Puce de choix (filtres, options). */
+fun Context.chip(text: String, on: Boolean = false, f: () -> Unit) = dtv(text, 15, if (on) Pal.onAccent else Pal.fg, 500, .12f).apply {
+    gravity = Gravity.CENTER
+    background = if (on) rounded(Pal.accent, 10) else rounded(Pal.surface2, 10, Pal.line, 1)
+    setPadding(px(16), 0, px(16), 0)
+    minHeight = px(42)
+    onTap(f)
 }
 
-fun Context.pill(text: String, lv: Int) = tv(text, 13, Pal.level(lv), 600, 1).apply {
-    background = rounded(Pal.mix(Pal.surface, Pal.level(lv), if (Pal.night) .18f else .14f), 999)
-    setPadding(px(10), px(4), px(10), px(4))
+/** Choix exclusif sous forme de puces. */
+fun Context.seg(options: List<Pair<String, String>>, selected: String, onPick: (String) -> Unit) = row(8) {
+    for ((value, text) in options) addView(chip(text, value == selected) { onPick(value) })
 }
 
-fun Context.tag(text: String) = tv(text.uppercase(), 10.5, Pal.muted, 600, 1).apply {
-    letterSpacing = 0.05f
-    background = rounded(Pal.surface, 6, Pal.line, 1)
+/** Pastille d'état : contour de la couleur du niveau. */
+fun Context.pill(text: String, lv: Int) = tv(text, 14.5, Pal.level(lv), 500, 1).apply {
+    typeface = Fonts.display(500); letterSpacing = if (Fonts.angular) .06f else 0f
+    background = rounded(Color.TRANSPARENT, 4, Pal.level(lv), 1)
+    setPadding(px(9), px(3), px(9), px(3))
+}
+
+fun Context.tag(text: String) = dtv(text, 11.5, Pal.muted, 500, .16f, keepCaps = true).apply {
+    background = rounded(Color.TRANSPARENT, 3, Pal.dim, 1)
     setPadding(px(6), px(2), px(6), px(2))
 }
 
@@ -183,35 +221,47 @@ fun Context.field(labelText: String, value: String, type: Int = InputType.TYPE_C
         this.hint = hint
         inputType = type
         setSingleLine(true)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, 17f * U.f)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, 19f * U.f)
         setTextColor(Pal.fg)
         setHintTextColor(Pal.muted)
         typeface = font(500)
         background = rounded(Pal.surface2, 12, Pal.line, 1)
         setPadding(px(14), 0, px(14), 0)
-        minHeight = px(46)
+        minHeight = px(50)
     }
     val box = col(6) {
-        addView(tv(labelText, 13, Pal.muted, 500, 1))
+        addView(tv(labelText, 15, Pal.muted, 500, 1))
         addView(e, lp())
     }
     return box to e
 }
 
-/** Barre de progression simple. */
+/** Jauge en segments inclinés. */
 class BarView(ctx: Context) : View(ctx) {
     var ratio = 0f; set(v) { field = v; invalidate() }
     var color = Pal.ok; set(v) { field = v; invalidate() }
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val r = RectF()
+    private val path = Path()
     override fun onDraw(c: Canvas) {
-        val h = height.toFloat()
-        p.color = Pal.surface2; r.set(0f, 0f, width.toFloat(), h); c.drawRoundRect(r, h / 2, h / 2, p)
-        p.color = color; r.set(0f, 0f, width * ratio.coerceIn(0f, 1f), h); c.drawRoundRect(r, h / 2, h / 2, p)
+        val h = height.toFloat(); if (h <= 0f || width <= 0) return
+        val gap = max(2f, h * .3f)
+        val pitch = max(px(11).toFloat(), h * 1.6f)
+        val n = max(6, (width / pitch).toInt())
+        val cw = (width - gap * (n - 1)) / n
+        val skew = h * .45f
+        val on = (ratio.coerceIn(0f, 1f) * n).roundToInt()
+        val off = Pal.mix(Pal.surface, Pal.dim, if (Pal.night) .55f else .5f)
+        for (i in 0 until n) {
+            val x = i * (cw + gap)
+            path.reset()
+            path.moveTo(x + skew, 0f); path.lineTo(x + cw, 0f); path.lineTo(x + cw - skew, h); path.lineTo(x, h); path.close()
+            p.color = if (i < on) color else off
+            c.drawPath(path, p)
+        }
     }
 }
 
-fun Context.bar(ratio: Float, color: Int, height: Number = 6) = BarView(this).apply {
+fun Context.bar(ratio: Float, color: Int, height: Number = 7) = BarView(this).apply {
     this.ratio = ratio; this.color = color
     layoutParams = LinearLayout.LayoutParams(MATCH, px(height))
 }
@@ -223,9 +273,11 @@ class BigText(ctx: Context) : View(ctx) {
     var maxSize = 80f
     var color = Pal.fg; set(v) { field = v; invalidate() }
     var align = Gravity.START
-    private val p = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = font(300) }
-    private val pu = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = font(500) }
-    fun weight(w: Int) { p.typeface = font(w); invalidate() }
+    private val p = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Fonts.display(300) }
+    private val pu = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = Fonts.display(500); letterSpacing = if (Fonts.angular) .14f else 0f }
+
+    fun weight(w: Int) { p.typeface = Fonts.display(w); invalidate() }
+    fun spacing(s: Float) { p.letterSpacing = s; invalidate() }
 
     override fun onMeasure(w: Int, h: Int) {
         val want = (maxSize * U.f * 1.05f).roundToInt()
@@ -235,7 +287,8 @@ class BigText(ctx: Context) : View(ctx) {
     override fun onDraw(c: Canvas) {
         var size = min(maxSize * U.f, height / 1.05f)
         pu.textSize = 20f * U.f
-        val unitW = if (unit.isEmpty()) 0f else pu.measureText(unit) + px(6)
+        val u = if (Fonts.angular) unit.uppercase(Locale.FRANCE) else unit
+        val unitW = if (u.isEmpty()) 0f else pu.measureText(u) + px(8)
         p.textSize = size
         val tw = p.measureText(text)
         if (tw + unitW > width && tw > 0) { size *= max(0.3f, (width - unitW) / tw); p.textSize = size }
@@ -244,7 +297,7 @@ class BigText(ctx: Context) : View(ctx) {
         val x = if (align == Gravity.CENTER) (width - total) / 2 else 0f
         val base = height - (height - size) / 2 - size * 0.12f
         c.drawText(text, x, base, p)
-        if (unit.isNotEmpty()) { pu.color = Pal.muted; c.drawText(unit, x + p.measureText(text) + px(6), base, pu) }
+        if (u.isNotEmpty()) { pu.color = Pal.muted; c.drawText(u, x + p.measureText(text) + px(8), base, pu) }
     }
 }
 
@@ -253,13 +306,13 @@ class Toggle(ctx: Context, on: Boolean, private val changed: (Boolean) -> Unit) 
     var on = on; private set
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
     init { isClickable = true; setOnClickListener { this.on = !this.on; invalidate(); changed(this.on) } }
-    override fun onMeasure(w: Int, h: Int) = setMeasuredDimension(px(52), px(32))
+    override fun onMeasure(w: Int, h: Int) = setMeasuredDimension(px(54), px(32))
     override fun onDraw(c: Canvas) {
         val h = height.toFloat()
         p.color = if (on) Pal.accent else Pal.surface2
         c.drawRoundRect(0f, 0f, width.toFloat(), h, h / 2, h / 2, p)
-        p.color = Color.WHITE
-        val r = h / 2 - px(3)
+        p.color = if (on) Color.WHITE else Pal.muted
+        val r = h / 2 - px(4)
         c.drawCircle(if (on) width - h / 2 else h / 2, h / 2, r, p)
     }
 }
@@ -293,7 +346,6 @@ class ScrollBox(ctx: Context, val content: View) : FrameLayout(ctx) {
         val ic = context.icon(res, 34, Pal.onAccent)
         addView(ic, LayoutParams(px(34), px(34), Gravity.CENTER))
         background = rounded(Pal.accent, 20)
-        elevation = px(4).toFloat()
         isClickable = true
         setOnClickListener { sv.scrollBy(0, dir * (sv.height * 0.8f).roundToInt()) }
     }
@@ -310,8 +362,7 @@ class ScrollBox(ctx: Context, val content: View) : FrameLayout(ctx) {
     }
 
     private fun style(b: FrameLayout, enabled: Boolean) {
-        b.background = rounded(if (enabled) Pal.accent else Pal.surface2, 20)
-        b.elevation = if (enabled) px(4).toFloat() else 0f
+        b.background = if (enabled) rounded(Pal.accent, 20) else rounded(Pal.surface2, 20, Pal.line, 1)
         (b.getChildAt(0) as ImageView).setColorFilter(if (enabled) Pal.onAccent else Pal.muted)
     }
 }

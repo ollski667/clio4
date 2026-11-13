@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -23,6 +24,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.max
 import kotlin.math.min
 
 class MainActivity : Activity() {
@@ -55,11 +57,13 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         st = Store(this)
+        Fonts.init(assets)
         sys = Sys(this, st)
         sys.onGps = { if (screen == "home" && !edit) runTicks() }
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 1)
         } else sys.startGps()
+        immersive()
         render()
         // Ouverture automatique de CarPlay juste après le démarrage de l'autoradio
         if (st.autoCP == "boot" && SystemClock.elapsedRealtime() < 5 * 60_000L) startCarplayCountdown()
@@ -67,6 +71,22 @@ class MainActivity : Activity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) sys.startGps()
+    }
+
+    /**
+     * Plein écran : la barre Android (retour, accueil) reste cachée en haut,
+     * un glissement vers le bas la fait apparaître, comme sur l'autoradio.
+     */
+    @Suppress("DEPRECATION")
+    private fun immersive() {
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_FULLSCREEN or
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) immersive()
     }
 
     override fun onResume() {
@@ -152,8 +172,10 @@ class MainActivity : Activity() {
     fun render() {
         val night = isNight(); lastNight = night
         Pal.apply(st, night)
-        val dm = resources.displayMetrics
-        U.f = min(dm.widthPixels / 1280f, dm.heightPixels / 690f) * st.ui
+        Fonts.angular = st.font != "normal"
+        // Taille réelle de l'écran : en plein écran, la barre Android ne prend pas de place
+        val dm = android.util.DisplayMetrics().also { @Suppress("DEPRECATION") windowManager.defaultDisplay.getRealMetrics(it) }
+        U.f = min(dm.widthPixels / 1280f, dm.heightPixels / 720f) * st.ui
         val logicalW = dm.widthPixels / U.f
         val logicalH = dm.heightPixels / U.f
         compact = logicalW < 1060
@@ -161,12 +183,13 @@ class MainActivity : Activity() {
         window.decorView.setBackgroundColor(Pal.bg)
 
         val root = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setBackgroundColor(Pal.bg) }
-        root.addView(sidebar(logicalH), LinearLayout.LayoutParams(px(if (compact) 112 else 140), MATCH))
+        root.addView(sidebar(logicalH), LinearLayout.LayoutParams(px(if (compact) 112 else 132), MATCH))
+        root.addView(View(this).apply { setBackgroundColor(Pal.line) }, LinearLayout.LayoutParams(max(1, px(1)), MATCH))
 
         frame = FrameLayout(this)
         val main = col(14) {
-            setPadding(px(16), px(14), px(20), px(20))
-            addView(statusBar(), lp(MATCH, px(40)))
+            setPadding(px(18), px(18), px(22), px(20))
+            addView(statusBar(), lp(MATCH, px(44)))
             val content = when (screen) {
                 "maint" -> maintScreen(compact)
                 "fuel" -> fuelScreen()
@@ -182,69 +205,81 @@ class MainActivity : Activity() {
         banner = null
         if (cpCountdown > 0) showBanner()
         root.addView(frame, LinearLayout.LayoutParams(0, MATCH, 1f))
-        setContentView(root)
+
+        // Barre de lumière en haut de l'écran, avec un léger halo
+        val screenBox = FrameLayout(this)
+        screenBox.addView(root, FrameLayout.LayoutParams(MATCH, MATCH))
+        screenBox.addView(View(this).apply {
+            background = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(Pal.glow, 0x00000000))
+        }, FrameLayout.LayoutParams(MATCH, px(16)))
+        screenBox.addView(View(this).apply { setBackgroundColor(Pal.light) }, FrameLayout.LayoutParams(MATCH, max(2, px(3))))
+        setContentView(screenBox)
         runTicks()
     }
 
     private fun sidebar(logicalH: Float) = col(if (logicalH < 640) 3 else 6) {
         gravity = Gravity.CENTER_HORIZONTAL
-        setBackgroundColor(Pal.side)
-        setPadding(0, px(if (logicalH < 640) 8 else 12), 0, px(if (logicalH < 640) 8 else 12))
+        setBackgroundColor(Pal.bg)
         val small = logicalH < 640
         val iconOnly = logicalH < 540
-        val w = px(if (compact) 96 else 118)
+        setPadding(0, px(if (small) 12 else 20), 0, px(if (small) 8 else 14))
         fun nav(id: String, text: String, res: Int, cp: Boolean = false, onClick: () -> Unit) {
             val on = !cp && (screen == id || (id == "apps" && screen == "settings"))
-            val fg = if (cp) Pal.onAccent else if (on) Pal.fg else Pal.muted
-            val h = if (cp) (if (iconOnly) 64 else if (small) 80 else 104) else (if (iconOnly) 56 else if (small) 66 else 84)
-            addView(col(if (small) 4 else 7) {
+            val fg = if (cp) Pal.onAccent else if (on) Pal.accent else Pal.muted
+            val h = if (cp) (if (iconOnly) 64 else if (small) 82 else 100) else (if (iconOnly) 56 else if (small) 68 else 82)
+            val item = FrameLayout(context)
+            item.addView(col(if (small) 4 else 7) {
                 gravity = Gravity.CENTER
-                if (cp) background = rounded(Pal.accent, 20) else if (on) background = rounded(Pal.surface2, 20)
-                addView(icon(res, if (cp) (if (small) 36 else 44) else (if (small) 30 else 36), fg))
-                if (!iconOnly) addView(tv(text, if (cp) 16 else if (small) 13 else 15, fg, 600, 1).apply { gravity = Gravity.CENTER_HORIZONTAL })
-                onTap(onClick)
-            }, LinearLayout.LayoutParams(w, px(h)))
+                if (cp) background = rounded(Pal.accent, 20)
+                addView(icon(res, if (cp) (if (small) 36 else 42) else (if (small) 30 else 34), fg))
+                if (!iconOnly) addView(dtv(text, if (cp) 15 else if (small) 13 else 14.5, fg, if (cp) 600 else 500, .14f).apply { gravity = Gravity.CENTER_HORIZONTAL })
+            }, FrameLayout.LayoutParams(px(if (cp) 112 else 116), MATCH, Gravity.CENTER_HORIZONTAL))
+            if (on) item.addView(View(context).apply { background = rounded(Pal.accent, 2) }, FrameLayout.LayoutParams(px(3), px(h - 32), Gravity.START or Gravity.CENTER_VERTICAL))
+            item.onTap(onClick)
+            addView(item, LinearLayout.LayoutParams(MATCH, px(h)).apply { if (cp) bottomMargin = px(10) })
         }
         nav("carplay", "CarPlay", R.drawable.ic_carplay, true) { openCarplay() }
         nav("home", "Accueil", R.drawable.ic_home) { go("home") }
         nav("maint", "Suivi", R.drawable.ic_wrench) { go("maint") }
         if (st.sideFuel) nav("fuel", "Carburant", R.drawable.ic_fuel) { go("fuel") }
+        if (st.sidePark) nav("park", "Parking", R.drawable.ic_park) { go("park") }
         if (st.sideRadio) nav("radio", "Radio", R.drawable.ic_radio) { openRadio() }
         addView(View(context), lp(1, 0, 1f))
         nav("apps", "Applis", R.drawable.ic_grid) { go("apps") }
     }
 
-    private val titles = mapOf("home" to "Accueil", "maint" to "Suivi", "fuel" to "Prix carburant", "park" to "Stationnement", "apps" to "Applications", "settings" to "Réglages")
+    private val titles = mapOf("home" to "Accueil", "maint" to "Suivi", "fuel" to "Carburant", "park" to "Stationnement", "apps" to "Applications", "settings" to "Réglages")
 
-    private fun statusBar() = row(20) {
-        if (screen == "settings") addView(smallBtn("Applis", R.drawable.ic_prev) { go("apps") })
-        addView(tv(if (edit) "Modifier l'accueil" else titles[screen] ?: "", 21, Pal.fg, 600, 1), lp(0, WRAP, 1f))
-        if (screen == "home" && !edit) addView(smallBtn("Modifier", R.drawable.ic_edit) { edit = true; sel = null; render() })
+    private fun statusBar() = row(22) {
+        if (screen == "settings") addView(smallBtn("‹ Applis", 0) { go("apps") })
+        addView(dtv(if (edit) "Modifier l'accueil" else titles[screen] ?: "", if (Fonts.angular) 22 else 23, Pal.fg, if (Fonts.angular) 500 else 600, .22f), lp(0, WRAP, 1f))
+        if (screen == "home" && !edit) addView(smallBtn("Modifier", R.drawable.ic_sliders) { edit = true; sel = null; render() })
         if (edit) addView(smallBtn("Terminé", R.drawable.ic_check, true) { edit = false; sel = null; render() })
         addView(icon(R.drawable.ic_bt, 22, Pal.muted).apply { alpha = if (sys.bluetoothOn()) 1f else .35f })
         addView(icon(R.drawable.ic_wifi, 22, Pal.muted).apply { alpha = if (sys.online()) 1f else .35f })
-        val vol = tv("${sys.volume}", 15, Pal.muted)
+        val vol = dtv("${sys.volume}", 17, Pal.muted, 500, .06f)
         addView(row(6) { addView(icon(R.drawable.ic_vol, 22, Pal.muted)); addView(vol) })
         addView(icon(if (Pal.night) R.drawable.ic_moon else R.drawable.ic_sun, 22, Pal.muted))
-        val date = tv("", 15, Pal.muted)
+        val date = dtv("", 17, Pal.muted, 500, .06f)
         if (!compact) addView(date)
-        val time = tv("", 18, Pal.fg, 600)
+        val time = dtv("", 28, Pal.fg, 400, .06f)
         addView(time)
         val upd = {
             val now = Date()
             time.text = SimpleDateFormat("HH:mm", Locale.FRANCE).format(now)
-            date.text = SimpleDateFormat("EEE d MMM", Locale.FRANCE).format(now)
+            val d = SimpleDateFormat("EEE d MMM", Locale.FRANCE).format(now)
+            date.text = if (Fonts.angular) d.uppercase(Locale.FRANCE) else d
             vol.text = "${sys.volume}"
         }
         upd(); ticks.add(upd)
     }
 
     fun smallBtn(text: String, res: Int, accent: Boolean = false, f: () -> Unit) = row(8) {
-        background = rounded(if (accent) Pal.accent else Pal.surface, 12)
-        setPadding(px(14), 0, px(14), 0)
-        addView(icon(res, 20, if (accent) Pal.onAccent else Pal.fg))
-        addView(tv(text, 14, if (accent) Pal.onAccent else Pal.fg, 500, 1))
-        layoutParams = lp(WRAP, px(38))
+        background = if (accent) rounded(Pal.accent, 10) else rounded(Pal.surface2, 10, Pal.line, 1)
+        setPadding(px(16), 0, px(16), 0)
+        if (res != 0) addView(icon(res, 19, if (accent) Pal.onAccent else Pal.fg))
+        addView(dtv(text, 15, if (accent) Pal.onAccent else Pal.fg, 500, .12f))
+        layoutParams = lp(WRAP, px(42))
         onTap(f)
     }
 
@@ -252,13 +287,13 @@ class MainActivity : Activity() {
     private val hideToast = Runnable { toastView?.visibility = View.GONE }
 
     fun toast(msg: String) {
-        val t = toastView ?: tv("", 16, Pal.bg, 500).apply {
+        val t = toastView ?: dtv("", 16, Pal.bg, 500, .1f).apply {
             background = rounded(Pal.fg, 14)
             setPadding(px(20), px(12), px(20), px(12))
             frame.addView(this, FrameLayout.LayoutParams(WRAP, WRAP, Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL).apply { bottomMargin = px(28) })
             toastView = this
         }
-        t.text = msg; t.visibility = View.VISIBLE
+        t.text = if (Fonts.angular) msg.uppercase(Locale.FRANCE) else msg; t.visibility = View.VISIBLE
         handler.removeCallbacks(hideToast); handler.postDelayed(hideToast, 2000L)
     }
 

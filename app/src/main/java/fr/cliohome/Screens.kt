@@ -40,7 +40,7 @@ private fun MainActivity.twoCols(compact: Boolean, left: View, right: View, left
 
 /** Champ date qui ouvre le calendrier d'Android. */
 private fun MainActivity.dateField(labelText: String, value: String, onPick: (String) -> Unit) = col(6) {
-    addView(tv(labelText, 13, Pal.muted, 500, 1))
+    addView(tv(labelText, 15, Pal.muted, 500, 1))
     addView(tv(if (value.isEmpty()) "Choisir…" else Store.frDate(value), 17, if (value.isEmpty()) Pal.muted else Pal.fg, 500, 1).apply {
         gravity = Gravity.CENTER_VERTICAL
         background = rounded(Pal.surface2, 12, Pal.line, 1)
@@ -73,10 +73,10 @@ private fun MainActivity.dueView(compact: Boolean): View {
                 setPadding(px(12), px(14), px(12), px(14))
                 if (it.id == cur?.id) background = rounded(Pal.surface2, 14)
                 addView(row(10) {
-                    addView(tv(it.name, 17, Pal.fg, 500, 1), lp(0, WRAP, 1f))
+                    addView(tv(it.name, 19.5, Pal.fg, 500, 1), lp(0, WRAP, 1f))
                     addView(pill(d.txt, d.lv))
                 })
-                addView(tv("Tous les " + st.every(it), 14, Pal.muted, 400, 1))
+                addView(tv("Tous les " + st.every(it), 16, Pal.muted, 400, 1))
                 if (d.lv >= 0) addView(bar(d.r, Pal.level(d.lv)))
                 onTap { mSel = it.id; armed = null; render() }
             })
@@ -103,7 +103,7 @@ private fun MainActivity.dueView(compact: Boolean): View {
                 toast("Kilométrage enregistré"); render()
             })
         })
-        addView(tv("Entre deux saisies, l'appli ajoute les km mesurés par le GPS. Intervalles indicatifs pour le 1.5 dCi : vérifiez votre carnet d'entretien.", 13, Pal.muted))
+        addView(tv("Entre deux saisies, l'appli ajoute les km mesurés par le GPS. Intervalles indicatifs pour le 1.5 dCi : vérifiez votre carnet d'entretien.", 15, Pal.muted))
         if (cur != null) addView(scroll(editor(cur)), lp(MATCH, 0, 1f))
     }
     return twoCols(compact, left, right)
@@ -141,7 +141,7 @@ private fun MainActivity.editor(it: Maint): View {
             dateBox = dateField("Dernier (date)", lastDate) { v -> lastDate = v; save(false) }
             addView(dateBox, lp(0, WRAP, 1.2f))
         })
-        addView(tv(if (d.lv < 0) "Indiquez le kilométrage et la date du dernier entretien." else "Prochaine échéance : " + listOfNotNull(d.dueKm, d.dueDate).joinToString(" ou ") + ", au premier des deux.", 13, Pal.muted))
+        addView(tv(if (d.lv < 0) "Indiquez le kilométrage et la date du dernier entretien." else "Prochaine échéance : " + listOfNotNull(d.dueKm, d.dueDate).joinToString(" ou ") + ", au premier des deux.", 15, Pal.muted))
         addView(row(10) {
             addView(btn("Fait aujourd'hui", R.drawable.ic_check, Btn.ACCENT) { save(true) })
             addView(btn("Enregistrer") { save(false) })
@@ -173,24 +173,24 @@ private fun MainActivity.logView(compact: Boolean): View {
     val spentT = log.sumOf { cost(it) }
     fun stat(v: String, l: String) = col(2) {
         background = rounded(Pal.surface2, 14); setPadding(px(14), px(12), px(14), px(12))
-        addView(tv(v, 24, Pal.fg, 400, 1)); addView(tv(l, 12.5, Pal.muted, 400, 1))
+        addView(tv(v, 24, Pal.fg, 400, 1)); addView(tv(l, 14.5, Pal.muted, 400, 1))
     }
     val list = col {
-        if (log.isEmpty()) addView(tv("Aucune ligne pour l'instant. Ajoutez un relevé ou un entretien à droite.", 14, Pal.muted).apply { setPadding(px(8), px(20), px(8), px(20)) })
+        if (log.isEmpty()) addView(tv("Aucune ligne pour l'instant. Ajoutez un relevé ou un entretien à droite.", 16, Pal.muted).apply { setPadding(px(8), px(20), px(8), px(20)) })
         log.forEachIndexed { i, e ->
             if (i > 0) addView(line())
             addView(row(12) {
                 setPadding(px(8), px(12), px(8), px(12))
-                addView(tv(Store.frDate(e.d), 15, Pal.fg, 400, 1), lp(px(104), WRAP))
+                addView(tv(Store.frDate(e.d), 17, Pal.fg, 400, 1), lp(px(104), WRAP))
                 addView(FrameLayout(context).apply {
                     background = rounded(Pal.surface2, 9)
                     addView(icon(if (e.t == "km") R.drawable.ic_gauge else R.drawable.ic_wrench, 17, Pal.accent), FrameLayout.LayoutParams(px(17), px(17), Gravity.CENTER))
                 }, lp(px(30), px(30)))
                 addView(col(2) {
-                    addView(tv(e.name, 15, Pal.fg, 500, 1))
-                    if (e.note.isNotEmpty()) addView(tv(e.note, 13, Pal.muted, 400, 1))
+                    addView(tv(e.name, 17, Pal.fg, 500, 1))
+                    if (e.note.isNotEmpty()) addView(tv(e.note, 15, Pal.muted, 400, 1))
                 }, lp(0, WRAP, 1f))
-                addView(tv("${Store.nf(e.km)} km", 15, Pal.fg, 400, 1).apply { gravity = Gravity.END }, lp(px(110), WRAP))
+                addView(tv("${Store.nf(e.km)} km", 17, Pal.fg, 400, 1).apply { gravity = Gravity.END }, lp(px(110), WRAP))
                 addView(tv(if (e.cost.isNotEmpty()) "${e.cost} €" else "—", 15, Pal.fg, 400, 1).apply { gravity = Gravity.END }, lp(px(80), WRAP))
                 addView(roundBtn(if (armed == e.id) R.drawable.ic_check else R.drawable.ic_x, 40) {
                     if (armed != e.id) { armed = e.id; render() } else { st.log = st.log.apply { removeAll { x -> x.id == e.id } }; armed = null; toast("Ligne supprimée"); render() }
@@ -241,7 +241,7 @@ private fun MainActivity.logView(compact: Boolean): View {
                 })
                 addView(btn("Exporter (CSV)", R.drawable.ic_download) { exportCsv() })
             })
-            addView(tv("L'export crée un fichier pour Excel ou LibreOffice. Choisissez une clé USB ou la mémoire de l'autoradio.", 13, Pal.muted))
+            addView(tv("L'export crée un fichier pour Excel ou LibreOffice. Choisissez une clé USB ou la mémoire de l'autoradio.", 15, Pal.muted))
         }), lp(MATCH, 0, 1f))
     }
     return twoCols(compact, left, right)
@@ -266,20 +266,20 @@ fun MainActivity.fuelScreen(): View {
                 addView(tv(at + (if (online) "" else " · hors ligne"), 13, Pal.muted, 400, 1), lp(0, WRAP, 1f))
                 if (online) addView(btn("Actualiser", height = 38, size = 14) { sys.refreshFuel(true) { render() }; toast("Recherche des prix…") })
             })
-            if (list.isEmpty()) addView(tv(if (st.lastLat == 0f) "Il faut d'abord une position GPS." else "Aucune station trouvée à moins de 10 km pour ce carburant.", 15, Pal.muted), lp(MATCH, 0, 1f))
+            if (list.isEmpty()) addView(tv(if (st.lastLat == 0f) "Il faut d'abord une position GPS." else "Aucune station trouvée à moins de 10 km pour ce carburant.", 17, Pal.muted), lp(MATCH, 0, 1f))
             else addView(scroll(col {
                 list.take(30).forEachIndexed { i, s ->
                     if (i > 0) addView(line())
                     addView(row(16) {
                         setPadding(px(12), px(14), px(12), px(14))
                         addView(col(3) {
-                            addView(tv(s.addr.ifEmpty { s.city }, 17, Pal.fg, 500, 1))
-                            addView(tv("${s.city} · ${km(s.km)}", 14, Pal.muted, 400, 1))
+                            addView(tv(s.addr.ifEmpty { s.city }, 19.5, Pal.fg, 500, 1))
+                            addView(tv("${s.city} · ${km(s.km)}", 16, Pal.muted, 400, 1))
                         }, lp(0, WRAP, 1f))
                         addView(col(3) {
                             gravity = Gravity.END
-                            addView(tv(euro(s.price, 3) + " €/L", 28, if (s.price == best) Pal.accent else Pal.fg, 300, 1))
-                            addView(tv("Plein 45 L : " + euro(s.price * 45, 2) + " €", 13, Pal.muted, 400, 1))
+                            addView(dtv(euro(s.price, 3) + " €/L", 30, if (s.price == best) Pal.accent else Pal.fg, 300, .02f))
+                            addView(tv("Plein ${st.tank} L : " + euro(s.price * st.tank, 2) + " €", 15, Pal.muted, 400, 1))
                         })
                     })
                 }
@@ -304,8 +304,8 @@ fun MainActivity.parkScreen(compact: Boolean): View {
             addView(row(8) { addView(icon(R.drawable.ic_park, 18, Pal.muted)); addView(label("Stationnement")) })
             addView(row(12) {
                 addView(col(6) {
-                    addView(tv("Heure d'arrivée", 13, Pal.muted, 500, 1))
-                    addView(tv(p?.at ?: "Maintenant", 17, Pal.fg, 500).apply {
+                    addView(tv("Heure d'arrivée", 15, Pal.muted, 500, 1))
+                    addView(tv(p?.at ?: "Maintenant", 19.5, Pal.fg, 500).apply {
                         gravity = Gravity.CENTER_VERTICAL; background = rounded(Pal.surface2, 12, Pal.line, 1)
                         setPadding(px(14), 0, px(14), 0); minHeight = px(46)
                         onTap {
@@ -320,7 +320,7 @@ fun MainActivity.parkScreen(compact: Boolean): View {
                 }, lp(0, WRAP, 1f))
                 addView(otherBox, lp(0, WRAP, 1f))
             })
-            addView(tv("Durée autorisée", 13, Pal.muted, 500, 1))
+            addView(tv("Durée autorisée", 15, Pal.muted, 500, 1))
             var r: LinearLayout? = null
             LIMITS.forEachIndexed { i, (v, t) ->
                 if (i % 4 == 0) { r = row(8); addView(r) }
@@ -334,19 +334,19 @@ fun MainActivity.parkScreen(compact: Boolean): View {
             addView(label("Aucun stationnement en cours"))
             addView(col(16) {
                 gravity = Gravity.CENTER_VERTICAL
-                addView(tv("Touchez le bouton en arrivant. L'heure et la fin du stationnement autorisé restent affichées à votre retour.", 15, Pal.muted))
+                addView(tv("Touchez le bouton en arrivant. L'heure et la fin du stationnement autorisé restent affichées à votre retour.", 17, Pal.muted))
                 addView(btn("Je me gare maintenant", R.drawable.ic_park, Btn.ACCENT, 64, 18) { parkNow() })
             }, lp(MATCH, 0, 1f))
         } else {
-            addView(row { addView(label("Garé à ${p.at}"), lp(0, WRAP, 1f)); if (p.end.isNotEmpty()) addView(tv("jusqu'à ${p.end}", 15, Pal.fg, 500)) })
+            addView(row { addView(label("Garé à ${p.at}"), lp(0, WRAP, 1f)); if (p.end.isNotEmpty()) addView(tv("jusqu'à ${p.end}", 17, Pal.fg, 500)) })
             val big = BigText(context).apply { maxSize = 80f; text = p.big; color = if (p.lv > 0) Pal.level(p.lv) else Pal.fg }
-            val unit = tv(p.unit, 18, Pal.muted)
+            val unit = tv(p.unit, 20.5, Pal.muted)
             val b = bar(p.r, Pal.level(p.lv), 10)
             addView(col(10) {
                 gravity = Gravity.CENTER_VERTICAL
                 addView(big, lp(MATCH, px(86))); addView(unit)
                 if (p.limit > 0) addView(b)
-                if (st.parkNote.isNotEmpty()) addView(row(6) { addView(icon(R.drawable.ic_pin, 18, Pal.muted)); addView(tv(st.parkNote, 16, Pal.muted, 400, 1)) })
+                if (st.parkNote.isNotEmpty()) addView(row(6) { addView(icon(R.drawable.ic_pin, 18, Pal.muted)); addView(tv(st.parkNote, 18.5, Pal.muted, 400, 1)) })
             }, lp(MATCH, 0, 1f))
             ticks.add { parkInfo()?.let { q -> big.text = q.big; big.color = if (q.lv > 0) Pal.level(q.lv) else Pal.fg; unit.text = q.unit; b.ratio = q.r; b.color = Pal.level(q.lv) } }
             addView(row(10) {
@@ -371,18 +371,18 @@ fun MainActivity.appsScreen(compact: Boolean): View {
         Tile("Stationnement", R.drawable.ic_park) { go("park") },
     )
     for (a in sys.launchableApps()) tiles.add(Tile(a.label, app = a) { if (!sys.launch(a.pkg, a.cls)) toast("Impossible d'ouvrir « ${a.label} »") })
-    val grid = col(22) {
+    val grid = col(24) {
         tiles.chunked(cols).forEach { chunk ->
             addView(row {
                 gravity = Gravity.TOP
-                for (t in chunk) addView(col(10) {
+                for (t in chunk) addView(col(11) {
                     gravity = Gravity.CENTER_HORIZONTAL
                     addView(FrameLayout(context).apply {
-                        background = rounded(Pal.surface, 20, Pal.line, 1)
+                        background = rounded(Pal.surface2, 18, Pal.line, 1)
                         if (t.app != null) addView(ImageView(context).apply { setImageDrawable(t.app.icon(context)) }, FrameLayout.LayoutParams(px(52), px(52), Gravity.CENTER))
-                        else addView(icon(t.res, 34, Pal.accent), FrameLayout.LayoutParams(px(34), px(34), Gravity.CENTER))
-                    }, LinearLayout.LayoutParams(px(76), px(76)))
-                    addView(tv(t.label, 14, Pal.fg, 500, 2).apply { gravity = Gravity.CENTER })
+                        else addView(icon(t.res, 34, Pal.fg), FrameLayout.LayoutParams(px(34), px(34), Gravity.CENTER))
+                    }, LinearLayout.LayoutParams(px(78), px(78)))
+                    addView(dtv(t.label, 15, Pal.fg, 500, .08f, lines = 2).apply { gravity = Gravity.CENTER })
                     onTap(t.f)
                 }, lp(0, WRAP, 1f))
                 repeat(cols - chunk.size) { addView(View(context), lp(0, 1, 1f)) }
@@ -393,83 +393,140 @@ fun MainActivity.appsScreen(compact: Boolean): View {
 }
 
 // =====================================================================
-// Réglages
+// Réglages : catégories à gauche, détail à droite
 // =====================================================================
+private val STABS = listOf(
+    Triple("affichage", "Affichage", R.drawable.ic_sliders),
+    Triple("accueil", "Accueil", R.drawable.ic_home),
+    Triple("carplay", "CarPlay et applis", R.drawable.ic_carplay),
+    Triple("barre", "Barre latérale", R.drawable.ic_grid),
+    Triple("suivi", "Suivi et carburant", R.drawable.ic_wrench),
+    Triple("systeme", "Système", R.drawable.ic_android),
+    Triple("apropos", "À propos", R.drawable.ic_check),
+)
+
 fun MainActivity.settingsScreen(compact: Boolean): View {
-    fun rowBlock(title: String, sub: String = "", vararg v: View) = col(10) {
-        addView(col(3) {
-            addView(tv(title, 16, Pal.fg, 500))
-            if (sub.isNotEmpty()) addView(tv(sub, 13, Pal.muted))
+    val tab = STABS.firstOrNull { it.first == st.settingsTab } ?: STABS[0]
+    fun blk(title: String, sub: String = "", vararg v: View) = col(10) {
+        setPadding(0, px(14), 0, px(14))
+        addView(col(4) {
+            addView(dtv(title, 16, Pal.fg, 500, .14f))
+            if (sub.isNotEmpty()) addView(tv(sub, 15, Pal.muted))
         })
         for (x in v) addView(x)
     }
-    fun swatches(cur: Int, colors: List<Int>, square: Boolean, set: (Int) -> Unit) = row(10) {
+    fun swatches(cur: Int, colors: List<Int>, set: (Int) -> Unit) = row(10) {
         for (c in colors) addView(View(context).apply {
-            background = rounded(c, if (square) 12 else 999, if (c == cur) Pal.fg else Pal.line, if (c == cur) 3 else 2)
+            background = rounded(c, 999, if (c == cur) Pal.fg else Pal.line, if (c == cur) 3 else 2)
             onTap { set(c); render() }
         }, LinearLayout.LayoutParams(px(40), px(40)))
     }
-    fun block(vararg blocks: View) = card(14) {
-        blocks.forEachIndexed { i, b -> if (i > 0) addView(View(context).apply { setBackgroundColor(Pal.line) }, lp(MATCH, 1)); addView(b) }
+    fun kv(k: String, v: String, f: (() -> Unit)? = null) = row(12) {
+        setPadding(0, px(10), 0, px(10))
+        addView(tv(k, 17, Pal.muted, 400, 1), lp(0, WRAP, 1f))
+        addView(dtv(v + if (f != null) "  ›" else "", 17, Pal.fg, 500, .04f, keepCaps = false))
+        if (f != null) onTap(f)
     }
-    fun chooser(title: String, cur: AppInfo?, save: (String) -> Unit) = btn("$title : " + (cur?.label ?: "à choisir")) {
+    fun toggleRow(text: String, on: Boolean, set: (Boolean) -> Unit) = row(12) {
+        setPadding(0, px(6), 0, px(6))
+        addView(tv(text, 18, Pal.fg, 500), lp(0, WRAP, 1f)); addView(Toggle(context, on) { set(it); render() })
+    }
+    fun chooser(title: String, cur: AppInfo?, save: (String) -> Unit) = kv(title, cur?.label ?: "à choisir") {
         val apps = sys.launchableApps()
         AlertDialog.Builder(this).setTitle(title).setItems(apps.map { it.label }.toTypedArray()) { _, i -> save(apps[i].pkg); render() }.show()
     }
 
     val photo = File(filesDir, "car.jpg")
-    val (nameBox, nameE) = field("Nom", st.carName); nameE.onChange { st.carName = it.trim() }
-    val (subBox, subE) = field("Sous-titre", st.carSub); subE.onChange { st.carSub = it.trim() }
-    val (plateBox, plateE) = field("Plaque d'immatriculation", st.plate)
-    plateE.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
-    plateE.onChange { st.plate = it.uppercase().trim().replace(Regex("[/\\s]+"), "-") }
-
-    val left = block(
-        rowBlock("Taille de l'interface", "Agrandit ou réduit tout l'écran : textes, boutons et widgets.",
-            seg(listOf("0.85" to "Petite", "1.0" to "Normale", "1.15" to "Grande", "1.3" to "Très grande"), st.ui.toString()) { st.ui = it.toFloat(); render() }),
-        rowBlock("Mode jour / nuit", "« Auto » passe en nuit à la tombée du jour, ou quand l'autoradio signale les phares.",
-            seg(listOf("auto" to "Auto", "day" to "Jour", "night" to "Nuit"), st.themeMode) { st.themeMode = it; render() }),
-        rowBlock("Couleur d'accent", "", swatches(st.accent, listOf(0xFF0A84FF, 0xFF30D158, 0xFFFF9F0A, 0xFFFF453A, 0xFFBF5AF2, 0xFF64D2FF, 0xFFE8C547).map { it.toInt() }, false) { st.accent = it }),
-        rowBlock("Fond de jour", "", swatches(st.bgDay, listOf(0xFFEEF1F4, 0xFFFFFFFF, 0xFFE6EBF0, 0xFFECEEE8, 0xFFF1ECEF).map { it.toInt() }, true) { st.bgDay = it }),
-        rowBlock("Fond de nuit", "", swatches(st.bgNight, listOf(0xFF0B0D10, 0xFF000000, 0xFF0E1420, 0xFF101613, 0xFF17121A).map { it.toInt() }, true) { st.bgNight = it }),
-        rowBlock("Sur l'accueil, afficher", "La photo de la voiture, ou seulement son nom.",
-            row { addView(seg(listOf("photo" to "La photo", "name" to "Le nom"), st.carShow) { st.carShow = it; render() }) },
-            *(if (st.carShow == "name") arrayOf<View>(row(12) { addView(nameBox, lp(0, WRAP, 1f)); addView(subBox, lp(0, WRAP, 1f)) }) else arrayOf())),
-        rowBlock("Plaque", "", plateBox),
-        rowBlock("Photo de la voiture", "Réduite automatiquement pour économiser la mémoire.", row(10) {
-            addView(btn(if (photo.exists()) "Changer la photo" else "Choisir une photo") { pickPhoto() })
-            if (photo.exists()) addView(btn("Retirer", style = Btn.DANGER) { photo.delete(); render() })
-        }),
-    )
-    val right = block(
-        rowBlock("Ouvrir CarPlay automatiquement", "Au démarrage de l'autoradio, un bandeau laisse 5 secondes pour annuler.",
-            row { addView(seg(listOf("off" to "Jamais", "boot" to "Au démarrage"), st.autoCP) { st.autoCP = it; render() }) }),
-        rowBlock("Applis liées", "Détectées automatiquement. Changez-les si ce n'est pas la bonne.",
-            row { addView(chooser("CarPlay", sys.carplayApp()) { st.cpPkg = it }) },
-            row { addView(chooser("Radio", sys.radioApp()) { st.radioPkg = it }) }),
-        rowBlock("Barre latérale", "",
-            row { addView(tv("Carburant", 16, Pal.fg, 500), lp(0, WRAP, 1f)); addView(Toggle(context, st.sideFuel) { st.sideFuel = it; render() }) },
-            row { addView(tv("Radio", 16, Pal.fg, 500), lp(0, WRAP, 1f)); addView(Toggle(context, st.sideRadio) { st.sideRadio = it; render() }) }),
-        rowBlock("Système", "Pour retrouver l'écran du fabricant ou tous les réglages d'Android.",
-            row(10) {
-                addView(btn("Paramètres Android", R.drawable.ic_android) { sys.openAndroidSettings() })
-                addView(btn("Interface d'origine", R.drawable.ic_home) { if (!sys.openStockLauncher()) toast("Écran d'origine introuvable") })
-            },
-            row { addView(btn("Changer l'écran d'accueil par défaut") { sys.chooseDefaultHome() }) }),
-        rowBlock("Infos véhicule (CAN-bus)", "Boîtier Raise, profil Renault. La température extérieure du capteur de la voiture sera affichée dès que la lecture du CAN sera branchée."),
-        rowBlock("Tout réinitialiser", "Remet les réglages, la disposition et efface le suivi.",
-            row { addView(btn(if (armed == "all") "Confirmer : tout effacer" else "Réinitialiser", style = if (armed == "all") Btn.DANGER_ARMED else Btn.DANGER) {
-                if (armed != "all") { armed = "all"; render() } else { st.resetAll(); photo.delete(); armed = null; toast("Réglages réinitialisés"); render() }
-            }) }),
-        tv("Clio Home ${BuildInfo.version}", 12, Pal.muted),
-    )
-    val content = if (compact) col(14) { addView(left); addView(right) } else row(14) {
-        gravity = Gravity.TOP
-        addView(left, LinearLayout.LayoutParams(0, WRAP, 1f)); addView(right, LinearLayout.LayoutParams(0, WRAP, 1f))
+    val detail: List<View> = when (tab.first) {
+        "affichage" -> listOf(
+            blk("Taille de l'interface", "Agrandit ou réduit textes, boutons et widgets.",
+                seg(listOf("0.85" to "Petite", "1.0" to "Normale", "1.15" to "Grande", "1.3" to "Très grande"), st.ui.toString()) { st.ui = it.toFloat(); render() }),
+            blk("Typographie", "Anguleuse : majuscules espacées. Normale : police classique, plus facile à lire.",
+                seg(listOf("angular" to "Anguleuse", "normal" to "Normale"), st.font) { st.font = it; render() }),
+            blk("Mode jour / nuit", "« Auto » passe en Nuit à la tombée du jour, ou quand l'autoradio signale les phares.",
+                seg(listOf("auto" to "Auto", "day" to "Jour", "night" to "Nuit"), st.themeMode) { st.themeMode = it; render() }),
+            blk("Couleur d'accent", "", swatches(st.accent, listOf(0xFF0A84FF, 0xFF30D158, 0xFFFF9F0A, 0xFFFF453A, 0xFFBF5AF2, 0xFF64D2FF, 0xFFE8C547).map { it.toInt() }) { st.accent = it }),
+        )
+        "accueil" -> {
+            val (nameBox, nameE) = field("Nom", st.carName); nameE.onChange { st.carName = it.trim() }
+            val (subBox, subE) = field("Sous-titre", st.carSub); subE.onChange { st.carSub = it.trim() }
+            val (plateBox, plateE) = field("Plaque d'immatriculation", st.plate)
+            plateE.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+            plateE.onChange { st.plate = it.uppercase().trim().replace(Regex("[/\\s]+"), "-") }
+            listOf(
+                blk("Widget voiture : afficher", "", seg(listOf("name" to "Le nom", "plate" to "La plaque", "photo" to "Une photo"), st.carShow) { st.carShow = it; render() }),
+                *(if (st.carShow == "name") arrayOf<View>(blk("Nom de la voiture", "", row(12) { addView(nameBox, lp(0, WRAP, 1f)); addView(subBox, lp(0, WRAP, 1f)) })) else arrayOf()),
+                *(if (st.carShow == "photo") arrayOf<View>(blk("Photo", "Réduite automatiquement pour économiser la mémoire.", row(10) {
+                    addView(btn(if (photo.exists()) "Changer la photo" else "Choisir une photo") { pickPhoto() })
+                    if (photo.exists()) addView(btn("Retirer", style = Btn.DANGER) { photo.delete(); render() })
+                })) else arrayOf()),
+                blk("Plaque", "", plateBox),
+                blk("Disposition des widgets", "Échanger, masquer ou ajouter des widgets sur l'accueil.",
+                    row { addView(btn("Modifier l'accueil", R.drawable.ic_sliders) { screen = "home"; edit = true; sel = null; render() }) }),
+            )
+        }
+        "carplay" -> listOf(
+            blk("Ouvrir CarPlay automatiquement", "Au démarrage de l'autoradio, un bandeau laisse 5 secondes pour annuler.",
+                seg(listOf("off" to "Jamais", "boot" to "Au démarrage"), st.autoCP) { st.autoCP = it; render() }),
+            blk("Applis liées", "Détectées automatiquement. Touchez pour en choisir une autre.",
+                chooser("CarPlay", sys.carplayApp()) { st.cpPkg = it }, line(), chooser("Radio", sys.radioApp()) { st.radioPkg = it }),
+        )
+        "barre" -> listOf(
+            blk("Boutons affichés", "CarPlay, Accueil, Suivi et Applis restent toujours visibles.",
+                toggleRow("Carburant", st.sideFuel) { st.sideFuel = it },
+                toggleRow("Parking", st.sidePark) { st.sidePark = it },
+                toggleRow("Radio", st.sideRadio) { st.sideRadio = it }),
+        )
+        "suivi" -> listOf(
+            blk("Carburant de la voiture", "Utilisé pour le widget et l'écran Carburant.", seg(Sys.FUELS, st.fuelType) { st.fuelType = it; render() }),
+            blk("Volume du plein", "Pour le calcul du prix d'un plein.", seg(listOf("40" to "40 L", "45" to "45 L", "50" to "50 L"), st.tank.toString()) { st.tank = it.toInt(); render() }),
+            blk("Historique", "Exporter tous les relevés et entretiens en fichier CSV.", row { addView(btn("Exporter (CSV)", R.drawable.ic_download) { exportCsv() }) }),
+        )
+        "systeme" -> listOf(
+            blk("Android", "Pour retrouver l'écran du fabricant ou tous les réglages d'Android.",
+                row(10) {
+                    addView(btn("Paramètres Android", R.drawable.ic_android) { sys.openAndroidSettings() })
+                    addView(btn("Interface d'origine", R.drawable.ic_home) { if (!sys.openStockLauncher()) toast("Écran d'origine introuvable") })
+                },
+                row { addView(btn("Changer l'écran d'accueil par défaut") { sys.chooseDefaultHome() }) }),
+            blk("Tout réinitialiser", "Remet les réglages, la disposition et efface le suivi.",
+                row { addView(btn(if (armed == "all") "Confirmer : tout effacer" else "Réinitialiser", style = if (armed == "all") Btn.DANGER_ARMED else Btn.DANGER) {
+                    if (armed != "all") { armed = "all"; render() } else { st.resetAll(); photo.delete(); armed = null; toast("Réglages réinitialisés"); render() }
+                }) }),
+        )
+        else -> listOf(
+            blk("Clio Home", "Version ${BuildInfo.version}",
+                kv("Autoradio", "AWESAFE PX9"), kv("Processeur", "MT8163 · 2 Go"), kv("Écran", "1280 × 720"), kv("Boîtier CAN", "Raise · Renault"),
+                tv("Police Chakra Petch : licence SIL Open Font License.", 14, Pal.muted)),
+        )
     }
-    return scroll(content)
+
+    val menu = col {
+        STABS.forEach { t ->
+            val on = t.first == tab.first
+            addView(row(14) {
+                setPadding(px(14), px(16), px(12), px(16))
+                if (on) background = rounded(Pal.mix(Pal.surface, Pal.accent, .12f), 10)
+                val c = if (on) Pal.accent else Pal.muted
+                addView(icon(t.third, 22, c))
+                addView(dtv(t.second, 16, if (on) Pal.accent else Pal.fg, 500, .1f), lp(0, WRAP, 1f))
+                addView(tv("›", 22, c))
+                onTap { st.settingsTab = t.first; armed = null; render() }
+            })
+            addView(line())
+        }
+    }
+    val left = card { addView(scroll(menu), lp(MATCH, 0, 1f)) }
+    val right = card {
+        addView(row(9) { addView(icon(tab.third, 18, Pal.muted)); addView(label(tab.second)) })
+        addView(scroll(col {
+            detail.forEachIndexed { i, v -> if (i > 0) addView(line()); addView(v) }
+        }), lp(MATCH, 0, 1f))
+    }
+    return if (compact) twoCols(true, left, right) else row(14) {
+        gravity = Gravity.TOP
+        addView(left, LinearLayout.LayoutParams(0, MATCH, .8f)); addView(right, LinearLayout.LayoutParams(0, MATCH, 1.6f))
+    }
 }
 
-object BuildInfo { const val version = "0.1" }
-
-@Suppress("unused") private val unusedColor = Color.TRANSPARENT
+object BuildInfo { const val version = "0.2" }

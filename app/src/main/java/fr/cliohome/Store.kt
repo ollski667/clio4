@@ -45,6 +45,7 @@ class Store(ctx: Context) {
     var bgNight get() = p.getInt("bgNight", 0xFF0B0D10.toInt()); set(v) = put("bgNight", v)
     var themeMode get() = p.getString("themeMode", "auto")!!; set(v) = put("themeMode", v)
     var ui get() = p.getFloat("ui", 1.15f); set(v) = put("ui", v)
+    var font get() = p.getString("font", "angular")!!; set(v) = put("font", v)
 
     // Accueil
     var layout: MutableList<String>
@@ -59,7 +60,9 @@ class Store(ctx: Context) {
     }
 
     var sideFuel get() = p.getBoolean("sideFuel", true); set(v) = put("sideFuel", v)
-    var sideRadio get() = p.getBoolean("sideRadio", true); set(v) = put("sideRadio", v)
+    var sideRadio get() = p.getBoolean("sideRadio2", false); set(v) = put("sideRadio2", v)
+    var sidePark get() = p.getBoolean("sidePark", true); set(v) = put("sidePark", v)
+    var settingsTab get() = p.getString("settingsTab", "affichage")!!; set(v) = put("settingsTab", v)
 
     // Applis liées
     var autoCP get() = p.getString("autoCP", "off")!!; set(v) = put("autoCP", v)
@@ -68,7 +71,7 @@ class Store(ctx: Context) {
 
     // Voiture
     var plate get() = p.getString("plate", "EA-846-SL")!!; set(v) = put("plate", v)
-    var carShow get() = p.getString("carShow", "photo")!!; set(v) = put("carShow", v)
+    var carShow get() = p.getString("carShow", "name")!!; set(v) = put("carShow", v)
     var carName get() = p.getString("carName", "Clio 4")!!; set(v) = put("carName", v)
     var carSub get() = p.getString("carSub", "Phase 2 · 1.5 dCi · 2016")!!; set(v) = put("carSub", v)
 
@@ -79,6 +82,7 @@ class Store(ctx: Context) {
 
     // Carburant
     var fuelType get() = p.getString("fuelType", "gazole")!!; set(v) = put("fuelType", v)
+    var tank get() = p.getInt("tank", 45); set(v) = put("tank", v)
     var fuelSort get() = p.getString("fuelSort", "prix")!!; set(v) = put("fuelSort", v)
 
     // Stationnement
