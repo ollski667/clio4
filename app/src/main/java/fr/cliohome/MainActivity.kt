@@ -126,6 +126,7 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         sys.stopGps()
         Diag.stop(this)
+        Share.stop()
         super.onDestroy()
     }
 
@@ -141,6 +142,7 @@ class MainActivity : Activity() {
             edit -> { edit = false; sel = null; render() }
             screen == "settings" -> go("apps")
             screen == "diag" -> go("settings")
+            screen == "share" -> go("apps")
             screen != "home" -> go("home")
         }
     }
@@ -206,6 +208,7 @@ class MainActivity : Activity() {
         val logicalW = dm.widthPixels / U.f
         val logicalH = dm.heightPixels / U.f
         compact = logicalW < 1060
+        if (screen != "share") Share.stop() // le partage ne reste ouvert que sur son écran
         ticks.clear()
         window.decorView.setBackgroundColor(Pal.bg)
 
@@ -224,6 +227,7 @@ class MainActivity : Activity() {
                 "apps" -> appsScreen(compact)
                 "settings" -> settingsScreen(compact)
                 "diag" -> diagScreen()
+                "share" -> shareScreen(compact)
                 else -> homeScreen(compact)
             }
             addView(content, lp(MATCH, 0, 1f))
@@ -245,7 +249,7 @@ class MainActivity : Activity() {
         val iconOnly = logicalH < 540
         setPadding(0, px(if (small) 12 else 20), 0, px(if (small) 8 else 14))
         fun nav(id: String, text: String, res: Int, cp: Boolean = false, onClick: () -> Unit) {
-            val on = !cp && (screen == id || (id == "apps" && (screen == "settings" || screen == "diag")))
+            val on = !cp && (screen == id || (id == "apps" && (screen == "settings" || screen == "diag" || screen == "share")))
             val fg = if (cp) Pal.onAccent else if (on) Pal.accent else Pal.muted
             val h = if (cp) (if (iconOnly) 64 else if (small) 82 else 100) else (if (iconOnly) 56 else if (small) 68 else 82)
             val item = FrameLayout(context)
@@ -269,7 +273,7 @@ class MainActivity : Activity() {
         nav("apps", "Applis", R.drawable.ic_grid) { go("apps") }
     }
 
-    private val titles = mapOf("home" to "Accueil", "maint" to "Suivi", "fuel" to "Carburant", "park" to "Stationnement", "apps" to "Applications", "settings" to "Réglages", "diag" to "Diagnostic")
+    private val titles = mapOf("home" to "Accueil", "maint" to "Suivi", "fuel" to "Carburant", "park" to "Stationnement", "apps" to "Applications", "settings" to "Réglages", "diag" to "Diagnostic", "share" to "Envoyer au téléphone")
 
     private fun statusBar() = row(22) {
         if (screen == "settings") addView(smallBtn("‹ Applis", 0) { go("apps") })
@@ -395,6 +399,19 @@ class MainActivity : Activity() {
     }
 
     private fun photoBytes(): ByteArray? = File(filesDir, "car.jpg").let { if (it.exists()) it.readBytes() else null }
+    fun photoBytesPublic() = photoBytes()
+
+    /** Récapitulatif du suivi (page HTML) enregistré sur clé USB. */
+    fun saveRecap() {
+        val name = "recap-suivi-clio-" + SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE).format(Date()) + ".html"
+        try {
+            startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("text/html").putExtra(Intent.EXTRA_TITLE, name), REQ_RECAP)
+        } catch (e: Exception) {
+            val dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: filesDir
+            val f = File(dir, name); f.writeText(Recap.html(st))
+            toast("Récapitulatif enregistré : " + f.path)
+        }
+    }
 
     fun exportDiag(text: String) {
         pendingDiag = text
@@ -425,6 +442,10 @@ class MainActivity : Activity() {
         val uri: Uri = data?.data ?: return
         if (resultCode != RESULT_OK) return
         if (requestCode == REQ_PHOTO) savePhoto(uri)
+        if (requestCode == REQ_RECAP) {
+            try { contentResolver.openOutputStream(uri)?.use { it.write(Recap.html(st).toByteArray(Charsets.UTF_8)) }; toast("Récapitulatif enregistré") }
+            catch (e: Exception) { toast("Impossible d'enregistrer le fichier") }
+        }
         if (requestCode == REQ_BACKUP) {
             try { contentResolver.openOutputStream(uri)?.use { it.write(st.exportJson(photoBytes()).toByteArray(Charsets.UTF_8)) }; toast("Sauvegarde enregistrée") }
             catch (e: Exception) { toast("Impossible d'enregistrer la sauvegarde") }
@@ -471,5 +492,6 @@ class MainActivity : Activity() {
         const val REQ_DIAG = 12
         const val REQ_BACKUP = 13
         const val REQ_RESTORE = 14
+        const val REQ_RECAP = 15
     }
 }

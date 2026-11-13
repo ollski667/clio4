@@ -13,8 +13,8 @@ android {
         // sur une base plus ancienne : on reste compatible dès Android 7.
         minSdk = 24
         targetSdk = 33
-        versionCode = 8
-        versionName = "0.6.1"
+        versionCode = 9
+        versionName = "0.7"
     }
 
     signingConfigs {
@@ -43,4 +43,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+}
+
+dependencies {
+    // QR code pour envoyer les données au téléphone (seule la partie QR est gardée à la compilation)
+    implementation("com.google.zxing:core:3.5.3")
 }

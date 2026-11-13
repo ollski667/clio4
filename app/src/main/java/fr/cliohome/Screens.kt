@@ -240,6 +240,7 @@ private fun MainActivity.logView(compact: Boolean): View {
                     toast("Ligne ajoutée"); render()
                 })
                 addView(btn("Exporter (CSV)", R.drawable.ic_download) { exportCsv() })
+                addView(btn("Envoyer au téléphone", R.drawable.ic_wifi) { go("share") })
             })
             addView(tv("L'export crée un fichier pour Excel ou LibreOffice. Choisissez une clé USB ou la mémoire de l'autoradio.", 15, Pal.muted))
         }), lp(MATCH, 0, 1f))
@@ -369,6 +370,7 @@ fun MainActivity.appsScreen(compact: Boolean): View {
         Tile("Paramètres Android", R.drawable.ic_android) { if (!sys.openAndroidSettings()) toast("Paramètres indisponibles") },
         Tile("Interface d'origine", R.drawable.ic_home) { if (!sys.openStockLauncher()) toast("Écran d'origine introuvable") },
         Tile("Stationnement", R.drawable.ic_park) { go("park") },
+        Tile("Envoyer au téléphone", R.drawable.ic_wifi) { go("share") },
     )
     for (a in sys.launchableApps()) tiles.add(Tile(a.label, app = a) { if (!sys.launch(a.pkg, a.cls)) toast("Impossible d'ouvrir « ${a.label} »") })
     val grid = col(24) {
@@ -535,7 +537,10 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
         "suivi" -> listOf(
             blk("Carburant de la voiture", "Utilisé pour le widget et l'écran Carburant.", seg(Sys.FUELS, st.fuelType) { st.fuelType = it; render() }),
             blk("Volume du plein", "Pour le calcul du prix d'un plein.", seg(listOf("40" to "40 L", "45" to "45 L", "50" to "50 L"), st.tank.toString()) { st.tank = it.toInt(); render() }),
-            blk("Historique", "Exporter tous les relevés et entretiens en fichier CSV.", row { addView(btn("Exporter (CSV)", R.drawable.ic_download) { exportCsv() }) }),
+            blk("Historique et récapitulatif", "Exporter les relevés et entretiens, ou envoyer un récapitulatif au téléphone par Wi-Fi.", row(10) {
+                addView(btn("Exporter (CSV)", R.drawable.ic_download) { exportCsv() })
+                addView(btn("Récapitulatif (clé USB)", R.drawable.ic_download) { saveRecap() })
+            }, row { addView(btn("Envoyer au téléphone", R.drawable.ic_wifi, Btn.ACCENT) { go("share") }) }),
         )
         "systeme" -> listOf(
             blk("Mise à jour", "Version installée : ${BuildInfo.version}. " + when {
@@ -610,4 +615,4 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
     }
 }
 
-object BuildInfo { const val version = "0.6.1" }
+object BuildInfo { const val version = "0.7" }
