@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <!-- Diagnostic : voir les services du fabricant (CAN, MCU) pour lire vitesse et température -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <!-- Mises à jour par Internet depuis GitHub -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Pour lister les applis installées (tiroir d'applis, ZLink, radio, écran d'origine) -->
     <queries>

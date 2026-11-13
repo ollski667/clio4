@@ -21,8 +21,13 @@ jobs:
           gradle-version: "8.14.3"
       - name: Compiler
         run: gradle assembleRelease --no-daemon
-      - name: Renommer
-        run: cp app/build/outputs/apk/release/app-release.apk ClioHome.apk
+      - name: Renommer et noter la version
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk ClioHome.apk
+          code=$(grep -oP 'versionCode = \K[0-9]+' app/build.gradle.kts)
+          name=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          echo "{\"versionCode\": $code, \"versionName\": \"$name\"}" > version.json
+          cat version.json
       - uses: actions/upload-artifact@v4
         with:
           name: ClioHome-apk
@@ -33,5 +38,7 @@ jobs:
           tag_name: derniere-version
           name: Clio Home (dernière version)
           body: "APK construit automatiquement depuis la branche main. Téléchargez ClioHome.apk ci-dessous."
-          files: ClioHome.apk
+          files: |
+            ClioHome.apk
+            version.json
           make_latest: true

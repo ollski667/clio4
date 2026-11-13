@@ -538,6 +538,24 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
             blk("Historique", "Exporter tous les relevés et entretiens en fichier CSV.", row { addView(btn("Exporter (CSV)", R.drawable.ic_download) { exportCsv() }) }),
         )
         "systeme" -> listOf(
+            blk("Mise à jour", "Version installée : ${BuildInfo.version}. " + when {
+                Updater.latest == null -> "Les nouvelles versions se téléchargent par Internet (partage de connexion de l'iPhone)."
+                Updater.hasUpdate(this) -> "La version ${Updater.latest!!.name} est disponible."
+                else -> "C'est la dernière version."
+            }, row(10) {
+                if (Updater.hasUpdate(this@settingsScreen)) addView(btn("Installer la version ${Updater.latest!!.name}", R.drawable.ic_download, Btn.ACCENT) {
+                    if (!Updater.canInstall(this@settingsScreen)) {
+                        toast("Autorisez Clio Home à installer des applis, puis revenez ici"); Updater.openInstallPermission(this@settingsScreen)
+                    } else Updater.downloadAndInstall(this@settingsScreen) { toast(it) }
+                })
+                else addView(btn("Rechercher une mise à jour", R.drawable.ic_download) {
+                    toast("Recherche…")
+                    Updater.check { res ->
+                        if (res == null) toast("Recherche impossible : vérifiez la connexion Internet")
+                        else { toast(if (Updater.hasUpdate(this@settingsScreen)) "Version ${res.name} disponible" else "Vous avez la dernière version"); render() }
+                    }
+                })
+            }),
             blk("Android", "Pour retrouver l'écran du fabricant ou tous les réglages d'Android.",
                 row(10) {
                     addView(btn("Paramètres Android", R.drawable.ic_android) { sys.openAndroidSettings() })
@@ -585,4 +603,4 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
     }
 }
 
-object BuildInfo { const val version = "0.5" }
+object BuildInfo { const val version = "0.6" }

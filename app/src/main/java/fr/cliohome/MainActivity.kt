@@ -165,6 +165,10 @@ class MainActivity : Activity() {
 
     private fun refreshOnline() {
         sys.useCityIfNoGps()
+        // Mise à jour disponible sur GitHub ? (au plus toutes les 6 heures)
+        if (sys.online() && System.currentTimeMillis() - Updater.lastCheck > 6 * 3_600_000L) {
+            Updater.check { if (it != null && Updater.hasUpdate(this)) { toast("Mise à jour ${it.name} disponible"); render() } }
+        }
         sys.refreshWeather { if (screen == "home") render() }
         sys.refreshFuel { if (screen == "home" || screen == "fuel") render() }
     }
@@ -271,6 +275,7 @@ class MainActivity : Activity() {
         if (screen == "settings") addView(smallBtn("‹ Applis", 0) { go("apps") })
         if (screen == "diag") addView(smallBtn("‹ Réglages", 0) { go("settings") })
         addView(dtv(if (edit) "Modifier l'accueil" else titles[screen] ?: "", if (Fonts.angular) 22 else 23, Pal.fg, if (Fonts.angular) 500 else 600, .22f), lp(0, WRAP, 1f))
+        if (Updater.hasUpdate(this@MainActivity) && screen != "settings") addView(smallBtn("Mise à jour", R.drawable.ic_download, true) { st.settingsTab = "systeme"; go("settings") })
         if (screen == "home" && !edit) addView(smallBtn("Modifier", R.drawable.ic_sliders) { edit = true; sel = null; render() })
         if (edit) addView(smallBtn("Terminé", R.drawable.ic_check, true) { edit = false; sel = null; render() })
         addView(icon(R.drawable.ic_bt, 22, Pal.muted).apply { alpha = if (sys.bluetoothOn()) 1f else .35f })
