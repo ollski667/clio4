@@ -70,7 +70,21 @@ class MainActivity : Activity() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) sys.startGps()
+        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) { sys.startGps(); render() }
+        else if (requestCode == 2) {
+            // Refus définitif : seul l'écran de l'appli dans les paramètres Android permet d'autoriser
+            toast("Autorisez « Position » dans les autorisations de Clio Home"); sys.openAppSettings()
+        }
+    }
+
+    /** Toucher le widget Vitesse : mène au réglage qui manque pour que le GPS fonctionne. */
+    fun fixGps() {
+        when (sys.gpsState()) {
+            Sys.Gps.NO_PERMISSION -> requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 2)
+            Sys.Gps.OFF -> { toast("Activez la localisation, puis revenez"); sys.openLocationSettings() }
+            Sys.Gps.SEARCHING -> toast("Signal GPS en recherche : en extérieur, cela prend jusqu'à 2 minutes")
+            Sys.Gps.OK -> toast("GPS actif")
+        }
     }
 
     /**
@@ -92,6 +106,7 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         running = true
+        sys.startGps() // au cas où la position a été autorisée depuis les paramètres Android
         if (lastNight != isNight()) render()
         handler.post(tick)
         refreshOnline()

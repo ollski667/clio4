@@ -94,37 +94,67 @@ class Sys(private val ctx: Context, private val st: Store) {
     var speedKmh = -1
     var gpsFix = false
     private var lastLoc: Location? = null
+    private var lastGpsAt = 0L
     private var listening = false
     var onGps: (() -> Unit)? = null
 
+    /** État du GPS pour le widget : ce qui manque, ou que tout va bien. */
+    enum class Gps { NO_PERMISSION, OFF, SEARCHING, OK }
+
+    fun hasLocationPermission() = ctx.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+    fun gpsOn(): Boolean = try {
+        (ctx.getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
+    } catch (e: Exception) { false }
+
+    fun gpsState(): Gps = when {
+        !hasLocationPermission() -> Gps.NO_PERMISSION
+        !gpsOn() -> Gps.OFF
+        gpsFix && System.currentTimeMillis() - lastGpsAt < 10_000L -> Gps.OK
+        else -> Gps.SEARCHING
+    }
+
     private val listener = object : LocationListener {
         override fun onLocationChanged(l: Location) {
-            gpsFix = true
-            speedKmh = if (l.hasSpeed()) (l.speed * 3.6f).toInt() else speedKmh.coerceAtLeast(0)
-            // Kilométrage estimé : on additionne les déplacements fiables
             val prev = lastLoc
-            if (prev != null && l.accuracy < 30f && speedKmh >= 5) {
-                val d = prev.distanceTo(l)
-                if (d < 500f) st.gpsMeters = st.gpsMeters + d
+            val now = System.currentTimeMillis()
+            if (l.provider == LocationManager.GPS_PROVIDER) {
+                gpsFix = true; lastGpsAt = now
+                speedKmh = when {
+                    l.hasSpeed() -> (l.speed * 3.6f).toInt()
+                    // Certains GPS ne donnent pas la vitesse : on la calcule entre deux positions
+                    prev != null && prev.provider == LocationManager.GPS_PROVIDER && l.time > prev.time ->
+                        (prev.distanceTo(l) / ((l.time - prev.time) / 1000f) * 3.6f).toInt().coerceIn(0, 250)
+                    else -> speedKmh.coerceAtLeast(0)
+                }
+                // Kilométrage estimé : on additionne les déplacements fiables
+                if (prev != null && prev.provider == LocationManager.GPS_PROVIDER && l.accuracy < 30f && speedKmh >= 5) {
+                    val d = prev.distanceTo(l)
+                    if (d < 500f) st.gpsMeters = st.gpsMeters + d
+                }
+                lastLoc = l
             }
-            lastLoc = l
             st.lastLat = l.latitude.toFloat(); st.lastLon = l.longitude.toFloat()
             onGps?.invoke()
         }
-        override fun onProviderDisabled(provider: String) { gpsFix = false; onGps?.invoke() }
-        override fun onProviderEnabled(provider: String) {}
+        override fun onProviderDisabled(provider: String) { if (provider == LocationManager.GPS_PROVIDER) gpsFix = false; onGps?.invoke() }
+        override fun onProviderEnabled(provider: String) { onGps?.invoke() }
         @Deprecated("Deprecated in Java")
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
     }
 
+    /** Démarre le GPS (vitesse) et le réseau (position approximative pour la météo). Sans effet si déjà lancé. */
     @SuppressLint("MissingPermission")
     fun startGps() {
-        if (listening) return
+        if (listening || !hasLocationPermission()) return
         try {
             val lm = ctx.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, listener, Looper.getMainLooper())
-            listening = true
-        } catch (e: Exception) { /* pas de permission ou pas de GPS */ }
+            for (p in listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)) {
+                if (!lm.allProviders.contains(p)) continue
+                try { lm.requestLocationUpdates(p, if (p == LocationManager.GPS_PROVIDER) 1000L else 60_000L, 0f, listener, Looper.getMainLooper()); listening = true } catch (e: Exception) {}
+                try { lm.getLastKnownLocation(p)?.let { if (st.lastLat == 0f) { st.lastLat = it.latitude.toFloat(); st.lastLon = it.longitude.toFloat() } } } catch (e: Exception) {}
+            }
+        } catch (e: Exception) { /* pas de GPS */ }
     }
 
     fun stopGps() {
@@ -133,11 +163,15 @@ class Sys(private val ctx: Context, private val st: Store) {
         listening = false
     }
 
+    fun openLocationSettings() = start(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) || openAndroidSettings()
+
+    fun openAppSettings() = start(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:" + ctx.packageName)))
+
     // ---------- Données en ligne (avec cache hors ligne) ----------
     private fun get(url: String): String? = try {
         val c = URL(url).openConnection() as HttpURLConnection
         c.connectTimeout = 8000; c.readTimeout = 10000
-        c.setRequestProperty("User-Agent", "ClioHome/0.1")
+        c.setRequestProperty("User-Agent", "ClioHome/0.3")
         if (c.responseCode == 200) c.inputStream.bufferedReader().use { it.readText() } else null
     } catch (e: Exception) { null }
 

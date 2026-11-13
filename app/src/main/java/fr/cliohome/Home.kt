@@ -115,6 +115,7 @@ private fun MainActivity.widgetFrame(id: String): View {
             "maint" -> frame.onTap { go("maint") }
             "fuel" -> frame.onTap { go("fuel") }
             "park" -> frame.onTap { go("park") }
+            "speed" -> frame.onTap { fixGps() }
             "temp" -> frame.onTap { sys.refreshWeather(true) { render() }; toast(if (sys.online()) "Météo actualisée" else "Hors ligne : météo indisponible") }
         }
         frame.setOnLongClickListener { edit = true; sel = null; render(); true }
@@ -160,13 +161,20 @@ fun MainActivity.widget(id: String): LinearLayout = when (id) {
         addView(grow(big))
         val g = bar(0f, Pal.accent, 12)
         addView(g)
-        val sub = tv("", 15, Pal.muted, 400, 1)
+        val sub = tv("", 15, Pal.muted, 400, 2)
         addView(sub)
         val upd = {
-            big.text = if (sys.speedKmh >= 0) "${sys.speedKmh}" else "—"
-            g.ratio = (sys.speedKmh.coerceAtLeast(0) / 130f)
-            sub.text = if (sys.gpsFix) "" else "Recherche du signal GPS…"
-            sub.visibility = if (sys.gpsFix) View.GONE else View.VISIBLE
+            val state = sys.gpsState()
+            big.text = if (state == Sys.Gps.OK && sys.speedKmh >= 0) "${sys.speedKmh}" else "—"
+            g.ratio = if (state == Sys.Gps.OK) sys.speedKmh.coerceAtLeast(0) / 130f else 0f
+            sub.text = when (state) {
+                Sys.Gps.NO_PERMISSION -> "Position non autorisée · touchez pour autoriser"
+                Sys.Gps.OFF -> "Localisation désactivée · touchez pour l'activer"
+                Sys.Gps.SEARCHING -> "Recherche du signal GPS… (en extérieur, jusqu'à 2 min)"
+                Sys.Gps.OK -> ""
+            }
+            sub.setTextColor(if (state == Sys.Gps.NO_PERMISSION || state == Sys.Gps.OFF) Pal.warn else Pal.muted)
+            sub.visibility = if (state == Sys.Gps.OK) View.GONE else View.VISIBLE
         }
         upd(); ticks.add(upd)
     }

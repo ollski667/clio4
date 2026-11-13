@@ -529,4 +529,4 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
     }
 }
 
-object BuildInfo { const val version = "0.2" }
+object BuildInfo { const val version = "0.3" }
