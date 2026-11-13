@@ -65,25 +65,25 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 
 /* sidebar */
 .side{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 0 14px;border-right:1px solid var(--edge-lo);position:relative}
-.nav{width:108px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--muted);font:500 12.5px var(--display);letter-spacing:.14em;text-transform:uppercase;position:relative}
+.nav{width:116px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--muted);font:500 14.5px var(--display);letter-spacing:.14em;text-transform:uppercase;position:relative}
 .nav svg{width:32px;height:32px}
 .nav.on{color:var(--fg)}
 .nav.on::before{content:"";position:absolute;left:-12px;top:16px;bottom:16px;width:3px;border-radius:2px;background:var(--accent);box-shadow:0 0 10px color-mix(in srgb,var(--accent) 60%,transparent)}
 .nav.on{color:var(--accent)}
 .nav.on .ico{filter:drop-shadow(0 0 6px var(--glow))}
-.cp{width:112px;height:100px;margin-bottom:10px;color:var(--on-accent);font:600 14px var(--display);letter-spacing:.16em;background:var(--accent)}
+.cp{width:112px;height:100px;margin-bottom:10px;color:var(--on-accent);font:600 16px var(--display);letter-spacing:.16em;background:var(--accent)}
 .cp svg{width:40px;height:40px}
 .side .fill{flex:1}
 
 /* main */
 .main{position:relative;display:flex;flex-direction:column;gap:14px;padding:20px 22px 20px 18px;min-width:0;min-height:0}
 .status{height:40px;display:flex;align-items:center;gap:22px;flex:none}
-.ttl{flex:1;font:500 22px var(--display);letter-spacing:.22em;text-transform:uppercase}
-.st{display:flex;align-items:center;gap:6px;color:var(--muted);font:500 15px var(--display);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.ttl{flex:1;font:500 25.5px var(--display);letter-spacing:.22em;text-transform:uppercase}
+.st{display:flex;align-items:center;gap:6px;color:var(--muted);font:500 17px var(--display);letter-spacing:.06em;font-variant-numeric:tabular-nums}
 .st svg{width:21px;height:21px}
 .st.off{opacity:.35}
-.clock{font:400 26px var(--display);letter-spacing:.06em;color:var(--fg);font-variant-numeric:tabular-nums}
-.chip{display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;font:500 13px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);
+.clock{font:400 28px var(--display);letter-spacing:.06em;color:var(--fg);font-variant-numeric:tabular-nums}
+.chip{display:flex;align-items:center;gap:8px;height:42px;padding:0 16px;font:500 15px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);
       background:var(--panel2);border:1px solid var(--edge-lo)}
 .chip svg{width:18px;height:18px}
 .chip.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
@@ -93,14 +93,14 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 .s2{grid-column:span 2}
 .w{padding:20px 22px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;min-width:0;container-type:size;overflow:hidden}
 .tap{cursor:pointer}
-.lbl{font:500 12px var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:9px}
+.lbl{font:500 14px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:9px}
 .lbl svg{width:17px;height:17px}
-.lbl .r{margin-left:auto;letter-spacing:.06em;color:var(--fg);font-size:14px}
+.lbl .r{margin-left:auto;letter-spacing:.06em;color:var(--fg);font-size:16px}
 .big{font:300 min(var(--fs,80px),38cqh,var(--cw,34cqw))/.92 var(--display);letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.unit{font:500 18px var(--display);letter-spacing:.14em;color:var(--muted);margin-left:8px;text-transform:uppercase}
-.sub{color:var(--muted);font-size:15px;line-height:1.35}
+.unit{font:500 20.5px var(--display);letter-spacing:.14em;color:var(--muted);margin-left:8px;text-transform:uppercase}
+.sub{color:var(--muted);font-size:17px;line-height:1.35}
 .sub b{color:var(--fg);font-weight:500}
-.tag{font:500 10px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border:1px solid var(--dim);padding:2px 6px}
+.tag{font:500 11.5px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border:1px solid var(--dim);padding:2px 6px}
 
 /* segmented gauge (angled cells) */
 .segbar{display:flex;gap:3px;height:12px}
@@ -109,72 +109,72 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 .segbar.ok i.on{background:var(--ok)} .segbar.warn i.on{background:var(--warn)} .segbar.bad i.on{background:var(--bad)}
 .segbar.thin{height:7px;gap:2px}
 
-.st-pill{font:500 12.5px var(--display);letter-spacing:.08em;white-space:nowrap;font-variant-numeric:tabular-nums;padding:3px 9px;border:1px solid currentColor}
+.st-pill{font:500 14.5px var(--display);letter-spacing:.08em;white-space:nowrap;font-variant-numeric:tabular-nums;padding:3px 9px;border:1px solid currentColor}
 .st-pill.ok{color:var(--ok)} .st-pill.warn{color:var(--warn)} .st-pill.bad{color:var(--bad)}
 
 /* car tile */
 .carname{font:300 min(104px,40cqh,16cqw) var(--display);letter-spacing:.14em;text-transform:uppercase;line-height:1}
-.carsub{font:500 14px var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.carsub{font:500 16px var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .carline{width:100%;height:auto;max-height:46cqh;color:var(--fg);opacity:.9}
 .plate{display:inline-flex;align-items:stretch;height:26px;background:#fff;color:#111;border:1.5px solid #111;letter-spacing:.08em}
-.plate .eu,.plate .rg{background:#1D4FB8;color:#fff;width:15px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;font:700 9px var(--body);letter-spacing:0}
+.plate .eu,.plate .rg{background:#1D4FB8;color:#fff;width:15px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;font:700 10.5px var(--body);letter-spacing:0}
 .plate .rg{width:11px}
-.plate .n{padding:0 9px;display:flex;align-items:center;font:600 15px var(--display)}
+.plate .n{padding:0 9px;display:flex;align-items:center;font:600 17px var(--display)}
 
 /* lists */
 .cols{flex:1;min-height:0;display:grid;grid-template-columns:1.45fr 1fr;gap:14px}
 .card{padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-height:0}
 .scroll{overflow:auto;min-height:0;flex:1;scrollbar-width:none}
 .scroll::-webkit-scrollbar{display:none}
-.row{display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:center;padding:14px 10px;border-bottom:1px solid var(--edge-lo);cursor:pointer;width:100%;text-align:left}
+.row{box-sizing:border-box;display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:center;padding:14px 10px;border-bottom:1px solid var(--edge-lo);cursor:pointer;width:100%;text-align:left}
 .row.sel{background:color-mix(in srgb,var(--fg) 6%,transparent);box-shadow:inset 3px 0 0 var(--light)}
-.row .n{font:500 17px var(--body)}
-.row .d{font-size:14px;color:var(--muted)}
+.row .n{font:500 19.5px var(--body)}
+.row .d{font-size:16px;color:var(--muted)}
 .row .segbar{grid-column:1/-1}
-.kv{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--edge-lo);font-size:15px}
+.kv{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--edge-lo);font-size:17px}
 .kv span{color:var(--muted)}
-.kv b{font:500 17px var(--display);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.kv b{font:500 19.5px var(--display);letter-spacing:.04em;font-variant-numeric:tabular-nums}
 .btns{display:flex;gap:10px;flex-wrap:wrap}
-.btn{height:48px;padding:0 20px;display:flex;align-items:center;gap:9px;font:600 14px var(--display);letter-spacing:.14em;text-transform:uppercase;background:var(--panel2);border:1px solid var(--edge-lo);color:var(--fg)}
+.btn{height:48px;padding:0 20px;display:flex;align-items:center;gap:9px;font:600 16px var(--display);letter-spacing:.14em;text-transform:uppercase;background:var(--panel2);border:1px solid var(--edge-lo);color:var(--fg)}
 .btn svg{width:19px;height:19px}
 .btn.steel{background:var(--accent);color:var(--on-accent);border-color:transparent}
 .sw{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .sw button{width:34px;height:34px;border-radius:50%;border:2px solid #2A2F34;cursor:pointer}
 .sw button.on{box-shadow:0 0 0 3px var(--page),0 0 0 5px var(--page-fg)}
 .price{font:300 30px var(--display);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
-.price small{font-size:13px;color:var(--muted);letter-spacing:.12em;margin-left:5px}
+.price small{font-size:15px;color:var(--muted);letter-spacing:.12em;margin-left:5px}
 
 .apps{display:grid;grid-template-columns:repeat(6,1fr);gap:24px 14px;align-content:start}
-.app{display:flex;flex-direction:column;align-items:center;gap:11px;font:500 13px var(--display);letter-spacing:.08em;text-transform:uppercase;text-align:center}
+.app{display:flex;flex-direction:column;align-items:center;gap:11px;font:500 15px var(--display);letter-spacing:.08em;text-transform:uppercase;text-align:center}
 .app .f{--c:12px;width:78px;height:78px}
 .app .in{display:flex;align-items:center;justify-content:center;color:var(--fg)}
 .app svg{width:32px;height:32px}
 
-.toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:6;background:var(--fg);color:var(--bg);padding:12px 22px;font:500 14px var(--display);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.toast{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:6;background:var(--fg);color:var(--bg);padding:12px 22px;font:500 16px var(--display);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
 [hidden]{display:none!important}
-.srow{display:flex;align-items:center;gap:14px;width:100%;padding:16px 12px;border-bottom:1px solid var(--edge-lo);font:500 15px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left}
+.srow{display:flex;align-items:center;gap:14px;width:100%;padding:16px 12px;border-bottom:1px solid var(--edge-lo);font:500 17px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left}
 .srow svg{width:22px;height:22px}
 .srow span{flex:1}
-.srow b{font-size:20px;font-weight:400}
+.srow b{font-size:23px;font-weight:400}
 .srow.on{color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);box-shadow:inset 3px 0 0 var(--accent)}
-button.kv{color:inherit;font:inherit;font-size:15px;cursor:pointer}
+button.kv{color:inherit;font:inherit;font-size:17px;cursor:pointer}
 /* typo normale : police classique, sans majuscules forcées */
 .dev[data-font="normal"]{--display:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
 .dev[data-font="normal"] :is(.ttl,.nav,.chip,.btn,.srow,.sk,.carname,.carsub,.unit,.app,.toast){text-transform:none;letter-spacing:normal}
 .dev[data-font="normal"] .ttl{font-weight:600}
-.dev[data-font="normal"] .nav{font-size:13px}
+.dev[data-font="normal"] .nav{font-size:15px}
 .dev[data-font="normal"] .carname{font-weight:600;letter-spacing:-.01em}
 .dev[data-font="normal"] .lbl{letter-spacing:.07em}
 .dev[data-font="normal"] .big{font-weight:300;letter-spacing:-.03em}
 .sets{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
 .sblk{display:flex;flex-direction:column;gap:10px;padding:14px 0;border-bottom:1px solid var(--edge-lo)}
 .sblk:first-child{padding-top:0}.sblk:last-child{border-bottom:0;padding-bottom:0}
-.sk{font:500 14px var(--display);letter-spacing:.14em;text-transform:uppercase}
-.sk small{display:block;font:400 13px var(--body);letter-spacing:0;text-transform:none;color:var(--muted);margin-top:4px}
+.sk{font:500 16px var(--display);letter-spacing:.14em;text-transform:uppercase}
+.sk small{display:block;font:400 15px var(--body);letter-spacing:0;text-transform:none;color:var(--muted);margin-top:4px}
 .swr{display:flex;gap:10px;flex-wrap:wrap}
 .swr button{width:38px;height:38px;border-radius:50%;border:2px solid var(--edge-lo)}
 .swr button.on{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--fg)}
-.tgl{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:16px;font-weight:500;padding:4px 0}
+.tgl{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:18.5px;font-weight:500;padding:4px 0}
 .tgl i{width:50px;height:30px;border-radius:15px;background:var(--panel2);border:1px solid var(--edge-lo);position:relative}
 .tgl i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted)}
 .tgl.on i{background:var(--accent);border-color:transparent}
@@ -301,12 +301,12 @@ function home(){
   const top=items.slice(0,3);
   return `<div class="grid">
     ${f(`<div class="lbl">Ma Clio <span class="plate"><span class="eu">F</span><span class="n">EA-846-SL</span><span class="rg"></span></span><span class="r">${nf(ODO)} KM</span></div>
-      ${R.showCar==='name'?`<div><div class="carname">Clio&nbsp;4</div><div class="carsub" style="margin-top:10px">Phase 2 · 1.5 dCi · 2016</div></div><div></div>`:`<div style="display:flex;align-items:center;justify-content:center;flex:1"><span class="plate" style="height:64px;transform:scale(1)"><span class="eu" style="width:34px;font-size:18px">F</span><span class="n" style="font-size:44px;padding:0 22px">EA-846-SL</span><span class="rg" style="width:26px"></span></span></div>`}`,'w s2')}
+      ${R.showCar==='name'?`<div><div class="carname">Clio&nbsp;4</div><div class="carsub" style="margin-top:10px">Phase 2 · 1.5 dCi · 2016</div></div><div></div>`:`<div style="display:flex;align-items:center;justify-content:center;flex:1"><span class="plate" style="height:64px;transform:scale(1)"><span class="eu" style="width:34px;font-size:20.5px">F</span><span class="n" style="font-size:44px;padding:0 22px">EA-846-SL</span><span class="rg" style="width:26px"></span></span></div>`}`,'w s2')}
     ${f(`<div class="lbl">${ic('gauge')}Vitesse</div><div class="big" style="--fs:110px"><span data-speed>${R.speed}</span><span class="unit">km/h</span></div><div data-speedbar>${seg(18,Math.round(R.speed/130*18))}</div>`,'w')}
-    ${f(`<div class="lbl">${ic('thermo')}Extérieur<span class="tag" style="margin-left:auto">exemple</span></div><div class="big" style="--fs:96px">9°</div><div class="sub"><b>Couvert</b> · 7° / 13°<br>Pluie possible vers 17 h</div>`,'w tap','" data-go="weather')}
-    ${f(`<div class="lbl">${ic('wrench')}Entretien<span class="r">${nf(ODO)} KM</span></div>`+top.map(it=>`<div style="display:flex;flex-direction:column;gap:7px"><div style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500">${it.n}<span class="st-pill ${it.lv}" style="margin-left:auto">${it.t}</span></div>${seg(30,Math.round(it.r*30),'thin '+it.lv)}</div>`).join(''),'w s2 tap','" data-go="maint')}
+    ${f(`<div class="lbl">${ic('thermo')}Extérieur</div><div class="big" style="--fs:96px">9°</div><div class="sub"><b>Couvert</b> · 7° / 13°<br>Pluie possible vers 17 h</div>`,'w tap','" data-go="weather')}
+    ${f(`<div class="lbl">${ic('wrench')}Entretien<span class="r">${nf(ODO)} KM</span></div>`+top.map(it=>`<div style="display:flex;flex-direction:column;gap:7px"><div style="display:flex;align-items:center;gap:10px;font-size:18.5px;font-weight:500">${it.n}<span class="st-pill ${it.lv}" style="margin-left:auto">${it.t}</span></div>${seg(30,Math.round(it.r*30),'thin '+it.lv)}</div>`).join(''),'w s2 tap','" data-go="maint')}
     ${f(`<div class="lbl">${ic('park')}Garé à ${p.at}</div><div><div class="big" style="--fs:60px;--cw:22cqw;color:var(--${p.lv==='ok'?'fg':p.lv})" data-prem>${p.big}</div><div class="sub" style="margin-top:6px">${p.rem<=0?'de dépassement':'restantes'} · jusqu'à <b>${p.end}</b></div></div><div data-pbar>${seg(14,Math.round(p.r*14),p.lv)}</div>`,'w tap','" data-go="park')}
-    ${f(`<div class="lbl">${ic('fuel')}Gazole<span class="tag" style="margin-left:auto">exemple</span></div><div><div class="sub">Le moins cher</div><div class="big" style="--fs:64px;--cw:21cqw;margin-top:6px">1,979<span class="unit">€/L</span></div><div class="sub" style="font-size:13px;margin-top:6px">Plein 45 L : <b>89,06 €</b></div></div><div class="sub"><b>Villeurbanne</b> · 2,1 km</div>`,'w tap','" data-go="fuel')}
+    ${f(`<div class="lbl">${ic('fuel')}Gazole<span class="tag" style="margin-left:auto">exemple</span></div><div><div class="sub">Le moins cher</div><div class="big" style="--fs:64px;--cw:21cqw;margin-top:6px">1,979<span class="unit">€/L</span></div><div class="sub" style="font-size:15px;margin-top:6px">Plein 45 L : <b>89,06 €</b></div></div><div class="sub"><b>Villeurbanne</b> · 2,1 km</div>`,'w tap','" data-go="fuel')}
   </div>`;
 }
 function maint(){
@@ -314,7 +314,7 @@ function maint(){
   return `<div style="display:flex;gap:10px"><button type="button" class="chip on">Échéances</button><button type="button" class="chip">Historique et kilométrage</button></div>
   <div class="cols">
     ${f(`<div class="lbl">Échéances<span class="r">${nf(ODO)} KM</span></div><div class="scroll">${items.map((x,i)=>`<button type="button" class="row ${i===R.sel?'sel':''}" data-sel="${i}"><div><div class="n">${x.n}</div><div class="d">Tous les ${x.e}</div></div><span class="st-pill ${x.lv}">${x.t}</span>${seg(36,Math.round(x.r*36),'thin '+x.lv)}</button>`).join('')}</div>`,'card')}
-    ${f(`<div class="lbl">Détail</div><div style="font:500 24px var(--display);letter-spacing:.06em">${it.n}</div>
+    ${f(`<div class="lbl">Détail</div><div style="font:500 27.5px var(--display);letter-spacing:.06em">${it.n}</div>
       <div><div class="kv"><span>Intervalle</span><b>${it.e}</b></div><div class="kv"><span>Dernier</span><b>${it.last}</b></div><div class="kv"><span>Prochaine échéance</span><b>${it.due}</b></div><div class="kv"><span>Reste</span><b style="color:var(--${it.lv})">${it.t}</b></div></div>
       <div style="flex:1"></div><div class="btns"><button type="button" class="btn steel" data-toast="Marqué comme fait aujourd'hui">${ic('check')}Fait aujourd'hui</button><button type="button" class="btn" data-toast="Export CSV">${ic('download')}Exporter</button></div>`,'card')}
   </div>`;
@@ -328,7 +328,7 @@ function park(){
   return `<div class="cols" style="grid-template-columns:1fr 1fr">
     ${f(`<div class="lbl">${ic('park')}Durée autorisée</div><div style="display:flex;gap:10px;flex-wrap:wrap">${[['Sans limite',0],['15 min',15],['30 min',30],['1 h',60],['1 h 30',90],['2 h',120],['3 h',180]].map(l=>`<button type="button" class="chip ${R.parkLim===l[1]?'on':''}" data-lim="${l[1]}">${l[0]}</button>`).join('')}</div>
       <div class="kv"><span>Arrivée</span><b>${p.at}</b></div><div class="kv"><span>Fin autorisée</span><b>${p.end}</b></div><div class="kv"><span>Où</span><b>Parking de la gare, niveau -1</b></div>`,'card')}
-    ${f(`<div class="lbl">Garé à ${p.at}<span class="r">jusqu'à ${p.end}</span></div><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px"><div style="font:300 96px/1 var(--display);color:var(--${p.lv==='ok'?'fg':p.lv})" data-prem>${p.big}</div><div class="sub" style="font-size:18px">${p.rem<=0?'de dépassement':'restantes'}</div><div data-pbar>${seg(24,Math.round(p.r*24),p.lv)}</div></div>
+    ${f(`<div class="lbl">Garé à ${p.at}<span class="r">jusqu'à ${p.end}</span></div><div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px"><div style="font:300 96px/1 var(--display);color:var(--${p.lv==='ok'?'fg':p.lv})" data-prem>${p.big}</div><div class="sub" style="font-size:20.5px">${p.rem<=0?'de dépassement':'restantes'}</div><div data-pbar>${seg(24,Math.round(p.r*24),p.lv)}</div></div>
       <div class="btns"><button type="button" class="btn steel" data-park="now">${ic('park')}Je me gare</button><button type="button" class="btn" data-toast="Stationnement terminé">Je repars</button></div>`,'card')}
   </div>`;
 }
