@@ -261,7 +261,7 @@ const nf=n=>n.toLocaleString('fr-FR');
 const f=(inner,cls='',st='')=>{const c=cls.split(' ').filter(Boolean),o=c.filter(x=>x==='s2'||x==='tap').join(' '),n=c.filter(x=>x!=='s2'&&x!=='tap').join(' ');return `<div class="f ${o}"${st?` style="${st}"`:''}><div class="in ${n}">${inner}</div></div>`;};
 const seg=(n,on,cls='')=>`<div class="segbar ${cls}">${Array.from({length:n},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div>`;
 
-const R={sTab:'affichage',font:'angular',fuelType:'gazole',tank:45,ui:1,autoCP:'off',sFuel:true,sPark:true,screen:'home',speed:52,showCar:'name',sel:0,parkAt:Date.now()-38*60000,parkLim:60};
+const R={sTab:'affichage',font:'angular',fuelType:'gazole',tank:45,ui:1.15,autoCP:'off',sFuel:true,sPark:true,screen:'home',speed:52,showCar:'name',sel:0,parkAt:Date.now()-38*60000,parkLim:60};
 const ODO=98450;
 const items=[
   {n:'Liquide de frein',e:'24 mois',r:.99,lv:'warn',t:'8 j',due:'20 nov. 2026',last:'20 nov. 2024'},
