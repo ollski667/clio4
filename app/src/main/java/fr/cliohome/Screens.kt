@@ -551,6 +551,7 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
         )
         else -> listOf(
             blk("Clio Home", "Version ${BuildInfo.version}",
+                row { addView(btn("Diagnostic GPS et voiture", R.drawable.ic_gauge, Btn.ACCENT) { go("diag") }) },
                 kv("Autoradio", "AWESAFE PX9"), kv("Processeur", "MT8163 · 2 Go"), kv("Écran", "1280 × 720"), kv("Boîtier CAN", "Raise · Renault"),
                 tv("Police Chakra Petch : licence SIL Open Font License.", 14, Pal.muted)),
         )
@@ -584,4 +585,4 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
     }
 }
 
-object BuildInfo { const val version = "0.4" }
+object BuildInfo { const val version = "0.5" }

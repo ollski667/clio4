@@ -62,6 +62,7 @@ class MainActivity : Activity() {
         Fonts.init(assets)
         sys = Sys(this, st)
         sys.onGps = { if (screen == "home" && !edit) runTicks() }
+        Diag.start(this)
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 1)
         } else sys.startGps()
@@ -110,6 +111,7 @@ class MainActivity : Activity() {
         super.onResume()
         running = true
         sys.startGps() // au cas où la position a été autorisée depuis les paramètres Android
+        if (sys.hasLocationPermission()) Diag.startGnss(this)
         if (lastNight != isNight()) render()
         handler.post(tick)
         refreshOnline()
@@ -123,6 +125,7 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         sys.stopGps()
+        Diag.stop(this)
         super.onDestroy()
     }
 
@@ -137,6 +140,7 @@ class MainActivity : Activity() {
         when {
             edit -> { edit = false; sel = null; render() }
             screen == "settings" -> go("apps")
+            screen == "diag" -> go("settings")
             screen != "home" -> go("home")
         }
     }
@@ -215,6 +219,7 @@ class MainActivity : Activity() {
                 "park" -> parkScreen(compact)
                 "apps" -> appsScreen(compact)
                 "settings" -> settingsScreen(compact)
+                "diag" -> diagScreen()
                 else -> homeScreen(compact)
             }
             addView(content, lp(MATCH, 0, 1f))
@@ -236,7 +241,7 @@ class MainActivity : Activity() {
         val iconOnly = logicalH < 540
         setPadding(0, px(if (small) 12 else 20), 0, px(if (small) 8 else 14))
         fun nav(id: String, text: String, res: Int, cp: Boolean = false, onClick: () -> Unit) {
-            val on = !cp && (screen == id || (id == "apps" && screen == "settings"))
+            val on = !cp && (screen == id || (id == "apps" && (screen == "settings" || screen == "diag")))
             val fg = if (cp) Pal.onAccent else if (on) Pal.accent else Pal.muted
             val h = if (cp) (if (iconOnly) 64 else if (small) 82 else 100) else (if (iconOnly) 56 else if (small) 68 else 82)
             val item = FrameLayout(context)
@@ -260,10 +265,11 @@ class MainActivity : Activity() {
         nav("apps", "Applis", R.drawable.ic_grid) { go("apps") }
     }
 
-    private val titles = mapOf("home" to "Accueil", "maint" to "Suivi", "fuel" to "Carburant", "park" to "Stationnement", "apps" to "Applications", "settings" to "Réglages")
+    private val titles = mapOf("home" to "Accueil", "maint" to "Suivi", "fuel" to "Carburant", "park" to "Stationnement", "apps" to "Applications", "settings" to "Réglages", "diag" to "Diagnostic")
 
     private fun statusBar() = row(22) {
         if (screen == "settings") addView(smallBtn("‹ Applis", 0) { go("apps") })
+        if (screen == "diag") addView(smallBtn("‹ Réglages", 0) { go("settings") })
         addView(dtv(if (edit) "Modifier l'accueil" else titles[screen] ?: "", if (Fonts.angular) 22 else 23, Pal.fg, if (Fonts.angular) 500 else 600, .22f), lp(0, WRAP, 1f))
         if (screen == "home" && !edit) addView(smallBtn("Modifier", R.drawable.ic_sliders) { edit = true; sel = null; render() })
         if (edit) addView(smallBtn("Terminé", R.drawable.ic_check, true) { edit = false; sel = null; render() })
@@ -363,6 +369,19 @@ class MainActivity : Activity() {
         } catch (e: Exception) { toast("Aucune appli pour choisir une image") }
     }
 
+    private var pendingDiag = ""
+
+    fun exportDiag(text: String) {
+        pendingDiag = text
+        try {
+            startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("text/plain").putExtra(Intent.EXTRA_TITLE, "diagnostic-clio-home.txt"), REQ_DIAG)
+        } catch (e: Exception) {
+            val dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: filesDir
+            val f = File(dir, "diagnostic-clio-home.txt"); f.writeText(text)
+            toast("Enregistré : " + f.path)
+        }
+    }
+
     fun exportCsv() {
         val name = "suivi-clio-" + SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE).format(Date()) + ".csv"
         try {
@@ -381,6 +400,10 @@ class MainActivity : Activity() {
         val uri: Uri = data?.data ?: return
         if (resultCode != RESULT_OK) return
         if (requestCode == REQ_PHOTO) savePhoto(uri)
+        if (requestCode == REQ_DIAG) {
+            try { contentResolver.openOutputStream(uri)?.use { it.write(pendingDiag.toByteArray(Charsets.UTF_8)) }; toast("Diagnostic enregistré") }
+            catch (e: Exception) { toast("Impossible d'enregistrer le fichier") }
+        }
         if (requestCode == REQ_CSV) {
             try {
                 contentResolver.openOutputStream(uri)?.use { it.write(st.csv().toByteArray(Charsets.UTF_8)) }
@@ -408,5 +431,6 @@ class MainActivity : Activity() {
     companion object {
         const val REQ_PHOTO = 10
         const val REQ_CSV = 11
+        const val REQ_DIAG = 12
     }
 }
