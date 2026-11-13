@@ -35,6 +35,7 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
   --brush:rgba(255,255,255,.018);
   --steel:linear-gradient(112deg,#8C939B 0%,#E3E7EA 32%,#9AA1A8 55%,#D2D6DA 78%,#8A9198 100%);
   --on-steel:#0B0C0E;
+  --accent:#0A84FF; --on-accent:#FFFFFF;
   --light:#F3F6F9; --glow:rgba(225,236,247,.55);
   --ok:#62D18E; --warn:#F0A43C; --bad:#FF4B3E;
   position:absolute;top:0;left:0;width:1280px;height:720px;transform-origin:0 0;
@@ -70,10 +71,10 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 .nav{width:108px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--muted);font:500 12.5px var(--display);letter-spacing:.14em;text-transform:uppercase;position:relative}
 .nav svg{width:32px;height:32px}
 .nav.on{color:var(--fg)}
-.nav.on::before{content:"";position:absolute;left:-12px;top:16px;bottom:16px;width:3px;background:var(--light);box-shadow:0 0 10px var(--glow)}
+.nav.on::before{content:"";position:absolute;left:-12px;top:16px;bottom:16px;width:3px;border-radius:2px;background:var(--accent);box-shadow:0 0 10px color-mix(in srgb,var(--accent) 60%,transparent)}
+.nav.on{color:var(--accent)}
 .nav.on .ico{filter:drop-shadow(0 0 6px var(--glow))}
-.cp{width:112px;height:100px;margin-bottom:10px;color:var(--on-steel);font:600 14px var(--display);letter-spacing:.16em;
-    background:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 1px,transparent 1px 3px),var(--steel)}
+.cp{width:112px;height:100px;margin-bottom:10px;color:var(--on-accent);font:600 14px var(--display);letter-spacing:.16em;background:var(--accent)}
 .cp svg{width:40px;height:40px}
 .side .fill{flex:1}
 
@@ -88,7 +89,7 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 .chip{display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;font:500 13px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);
       background:var(--panel2);border:1px solid var(--edge-lo)}
 .chip svg{width:18px;height:18px}
-.chip.on{background:var(--steel);color:var(--on-steel);border-color:transparent}
+.chip.on{background:var(--accent);color:var(--on-accent);border-color:transparent}
 
 .screen{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px}
 .grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:14px}
@@ -107,7 +108,7 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 /* segmented gauge (angled cells) */
 .segbar{display:flex;gap:3px;height:12px}
 .segbar i{flex:1;transform:skewX(-24deg);background:color-mix(in srgb,var(--dim) 45%,transparent)}
-.segbar i.on{background:var(--fg)}
+.segbar i.on{background:var(--accent)}
 .segbar.ok i.on{background:var(--ok)} .segbar.warn i.on{background:var(--warn)} .segbar.bad i.on{background:var(--bad)}
 .segbar.thin{height:7px;gap:2px}
 
@@ -139,7 +140,10 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 .btns{display:flex;gap:10px;flex-wrap:wrap}
 .btn{height:48px;padding:0 20px;display:flex;align-items:center;gap:9px;font:600 14px var(--display);letter-spacing:.14em;text-transform:uppercase;background:var(--panel2);border:1px solid var(--edge-lo);color:var(--fg)}
 .btn svg{width:19px;height:19px}
-.btn.steel{background:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 1px,transparent 1px 3px),var(--steel);color:var(--on-steel);border-color:transparent}
+.btn.steel{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.sw{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sw button{width:34px;height:34px;border-radius:50%;border:2px solid #2A2F34;cursor:pointer}
+.sw button.on{box-shadow:0 0 0 3px var(--page),0 0 0 5px var(--page-fg)}
 .price{font:300 30px var(--display);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .price small{font-size:13px;color:var(--muted);letter-spacing:.12em;margin-left:5px}
 
@@ -186,6 +190,7 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
         <button id="b-mode" type="button">Passer en mode Acier (jour)</button>
         <button id="b-car" type="button">Voiture : afficher la plaque seule</button>
       </div>
+      <div class="sw" id="sw" aria-label="Couleur d'accent"></div>
     </div>
     <div class="panel">
       <h2>Ce qui change par rapport à la version actuelle</h2>
@@ -336,6 +341,10 @@ $('dev').addEventListener('click',e=>{
   const t=e.target.closest('[data-toast]');if(t)toast(t.dataset.toast);
 });
 $('b-mode').onclick=e=>{const d=$('dev');d.dataset.mode=d.dataset.mode==='nuit'?'acier':'nuit';e.target.textContent=d.dataset.mode==='nuit'?'Passer en mode Acier (jour)':'Passer en mode Nuit';render();};
+const ACC=['#0A84FF','#30D158','#FF9F0A','#FF453A','#BF5AF2','#64D2FF','#E8C547'];
+function sw(){$('sw').innerHTML=ACC.map(c=>`<button type="button" style="background:${c}" class="${getComputedStyle($('dev')).getPropertyValue('--accent').trim().toLowerCase()===c.toLowerCase()?'on':''}" data-acc="${c}" aria-label="Couleur ${c}"></button>`).join('');}
+$('sw').addEventListener('click',e=>{const b=e.target.closest('[data-acc]');if(!b)return;const c=b.dataset.acc,d=$('dev');d.style.setProperty('--accent',c);const n=parseInt(c.slice(1),16),l=(0.299*(n>>16&255)+0.587*(n>>8&255)+0.114*(n&255))/255;d.style.setProperty('--on-accent',l>.6?'#0B0C0E':'#FFFFFF');sw();});
+sw();
 $('b-car').onclick=e=>{R.showCar=R.showCar==='name'?'plate':'name';e.target.textContent=R.showCar==='name'?'Voiture : afficher la plaque seule':'Voiture : afficher le nom';R.screen='home';render();};
 
 function fit(){const st=$('stage'),w=st.clientWidth-26,s=Math.min(1,w/1280),d=$('dev');d.style.transform=`scale(${s})`;d.style.left=((st.clientWidth-1280*s)/2)+'px';d.style.top='13px';st.style.height=(720*s+26)+'px';}
