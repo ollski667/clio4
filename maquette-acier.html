@@ -39,16 +39,13 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
   --light:#F3F6F9; --glow:rgba(225,236,247,.55);
   --ok:#62D18E; --warn:#F0A43C; --bad:#FF4B3E;
   position:absolute;top:0;left:0;width:1280px;height:720px;transform-origin:0 0;
-  background:
-    repeating-linear-gradient(90deg,var(--brush) 0 1px,transparent 1px 4px),
-    linear-gradient(162deg,color-mix(in srgb,var(--bg) 92%,#fff 8%),var(--bg) 46%);
-  background-color:var(--bg);color:var(--fg);font-family:var(--body);
+  background:var(--bg);color:var(--fg);font-family:var(--body);
   display:grid;grid-template-columns:132px 1fr;overflow:hidden;
   box-shadow:0 0 0 12px #000,0 0 0 13px #24282D;user-select:none;-webkit-user-select:none;
 }
 .dev[data-mode="acier"]{
-  --bg:#B9BEC3; --fg:#0E1012; --muted:#4A5158; --dim:#8D949B;
-  --panel:#D3D7DB; --panel2:#C4C9CE; --edge-hi:#F7F9FA; --edge-lo:#8F969D;
+  --bg:#E8EBEE; --fg:#0E1012; --muted:#5A6169; --dim:#B4BAC0;
+  --panel:#FFFFFF; --panel2:#F1F3F5; --edge-hi:#FFFFFF; --edge-lo:#D3D8DD;
   --brush:rgba(255,255,255,.22);
   --steel:linear-gradient(112deg,#3A3F45 0%,#6B727A 32%,#2E3338 58%,#565D64 100%);
   --on-steel:#F2F4F6;
@@ -62,9 +59,9 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 .lightbar{position:absolute;top:0;left:0;right:0;height:3px;background:var(--light);box-shadow:0 0 14px 2px var(--glow),0 0 40px 4px color-mix(in srgb,var(--glow) 40%,transparent);z-index:4}
 
 /* frame: outer layer = metal edge gradient, inner = panel, rounded */
-.f{--c:16px;position:relative;padding:1px;background:linear-gradient(135deg,var(--edge-hi),var(--edge-lo) 38%,var(--edge-lo) 70%,color-mix(in srgb,var(--edge-hi) 55%,var(--edge-lo)));}
+.f{--c:16px;position:relative;padding:1px;background:var(--edge-lo);}
 .f>.in{height:100%;box-sizing:border-box;
-   background:repeating-linear-gradient(90deg,var(--brush) 0 1px,transparent 1px 3px),linear-gradient(170deg,var(--panel2),var(--panel) 55%);}
+   background:var(--panel);}
 
 /* sidebar */
 .side{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 0 14px;border-right:1px solid var(--edge-lo);position:relative}
@@ -180,8 +177,8 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
 
 <div class="wrap">
   <div class="top">
-    <h1>Clio Home · Acier</h1>
-    <p>Proposition de nouveau style pour l'autoradio de la Clio : panneaux arrondis à liseré métallique, acier brossé, barre de lumière en haut de l'écran, typographie anguleuse. Tout se touche. Le mode « Acier » est la version de jour, « Nuit » la version sombre.</p>
+    <h1>Clio Home · Nouvelle typo</h1>
+    <p>Proposition de nouveau style pour l'autoradio de la Clio : typographie anguleuse en majuscules espacées, panneaux arrondis sobres, couleur d'accent, barre de lumière en haut de l'écran. Tout se touche. Le bouton ci-dessous passe du mode Nuit au mode Jour.</p>
   </div>
 
   <div class="stage" id="stage">
@@ -200,7 +197,7 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
     <div class="panel">
       <h2>Essayer</h2>
       <div class="sim">
-        <button id="b-mode" type="button">Passer en mode Acier (jour)</button>
+        <button id="b-mode" type="button">Passer en mode Jour</button>
         <button id="b-car" type="button">Voiture : afficher la plaque seule</button>
       </div>
       <div class="sw" id="sw" aria-label="Couleur d'accent"></div>
@@ -209,7 +206,7 @@ html,body{background:var(--page);color:var(--page-fg);font-family:var(--body)}
       <h2>Ce qui change par rapport à la version actuelle</h2>
       <ul>
         <li>Même contenu et mêmes écrans. <span>Seul le style change, l'appli reste aussi légère.</span></li>
-        <li>Coins arrondis avec un liseré métallique, reflets d'acier brossé, barre de lumière en haut.</li>
+        <li>Nouvelle typographie anguleuse, panneaux unis à coins arrondis, barre de lumière en haut.</li>
         <li>Jauges en segments inclinés pour la vitesse, l'entretien et le stationnement.</li>
         <li>Valeurs d'exemple : météo, prix et entretiens ne sont pas vos vraies données.</li>
       </ul>
@@ -338,7 +335,7 @@ function settings(){
   const tg=(k,label,on)=>`<button type="button" class="tgl ${on?'on':''}" data-set="${k}:${on?0:1}"><span>${label}</span><i></i></button>`;
   return `<div class="scroll"><div class="sets">
     ${f(blk('Taille de l\'interface','Agrandit ou réduit textes, boutons et widgets.',ch('ui',[[0.85,'Petite'],[1,'Normale'],[1.15,'Grande'],[1.3,'Très grande']],R.ui))+
-      blk('Mode jour / nuit','« Auto » passe en Nuit à la tombée du jour ou avec les phares.',ch('mode',[['auto','Auto'],['acier','Acier (jour)'],['nuit','Nuit']],mode))+
+      blk('Mode jour / nuit','« Auto » passe en Nuit à la tombée du jour ou avec les phares.',ch('mode',[['auto','Auto'],['acier','Jour'],['nuit','Nuit']],mode))+
       blk('Couleur d\'accent','',`<div class="swr">${ACC.map(c=>`<button type="button" style="background:${c}" class="${acc===c.toLowerCase()?'on':''}" data-acc="${c}" aria-label="Couleur ${c}"></button>`).join('')}</div>`)+
       blk('Sur l\'accueil, afficher','',ch('car',[['name','Le nom'],['plate','La plaque'],['photo','Une photo']],R.showCar))+
       blk('Plaque','',`<div class="kv" style="border:0;padding:0"><span class="plate"><span class="eu">F</span><span class="n">EA-846-SL</span><span class="rg"></span></span><button type="button" class="chip" data-toast="Modifier la plaque">Modifier</button></div>`),'card')}
@@ -373,14 +370,14 @@ $('dev').addEventListener('click',e=>{
   const a=e.target.closest('[data-acc]');if(a){setAcc(a.dataset.acc);return;}
   const z=e.target.closest('[data-set]');if(z){const [k,v]=z.dataset.set.split(':');
     if(k==='ui'){R.ui=+v;fit();}
-    if(k==='mode'){$('dev').dataset.mode=v==='auto'?'nuit':v;$('b-mode').textContent=$('dev').dataset.mode==='nuit'?'Passer en mode Acier (jour)':'Passer en mode Nuit';if(v==='auto')toast('Auto : Nuit en ce moment');}
+    if(k==='mode'){$('dev').dataset.mode=v==='auto'?'nuit':v;$('b-mode').textContent=$('dev').dataset.mode==='nuit'?'Passer en mode Jour':'Passer en mode Nuit';if(v==='auto')toast('Auto : Nuit en ce moment');}
     if(k==='car'){R.showCar=v==='photo'?'name':v;if(v==='photo')toast('Choix d\'une photo dans la galerie');}
     if(k==='cp')R.autoCP=v;
     if(k==='sFuel'||k==='sPark')R[k]=v==='1';
     render();return;}
   const t=e.target.closest('[data-toast]');if(t)toast(t.dataset.toast);
 });
-$('b-mode').onclick=e=>{const d=$('dev');d.dataset.mode=d.dataset.mode==='nuit'?'acier':'nuit';e.target.textContent=d.dataset.mode==='nuit'?'Passer en mode Acier (jour)':'Passer en mode Nuit';render();};
+$('b-mode').onclick=e=>{const d=$('dev');d.dataset.mode=d.dataset.mode==='nuit'?'acier':'nuit';e.target.textContent=d.dataset.mode==='nuit'?'Passer en mode Jour':'Passer en mode Nuit';render();};
 const ACC=['#0A84FF','#30D158','#FF9F0A','#FF453A','#BF5AF2','#64D2FF','#E8C547'];
 function sw(){$('sw').innerHTML=ACC.map(c=>`<button type="button" style="background:${c}" class="${getComputedStyle($('dev')).getPropertyValue('--accent').trim().toLowerCase()===c.toLowerCase()?'on':''}" data-acc="${c}" aria-label="Couleur ${c}"></button>`).join('');}
 $('sw').addEventListener('click',e=>{const b=e.target.closest('[data-acc]');if(b)setAcc(b.dataset.acc);});
