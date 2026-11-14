@@ -136,6 +136,24 @@ class MainActivity : Activity() {
         if (screen != "home" || edit) { screen = "home"; edit = false; sel = null; render() }
     }
 
+    /** Touches de volume (commandes au volant) : on règle le volume de la musique et on affiche l'indicateur d'Android. */
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        val dir = when (keyCode) {
+            android.view.KeyEvent.KEYCODE_VOLUME_UP -> 1
+            android.view.KeyEvent.KEYCODE_VOLUME_DOWN -> -1
+            android.view.KeyEvent.KEYCODE_VOLUME_MUTE -> 0
+            else -> return super.onKeyDown(keyCode, event)
+        }
+        sys.volumeStep(dir, true)
+        runTicks()
+        return true
+    }
+
+    override fun onKeyUp(keyCode: Int, event: android.view.KeyEvent?): Boolean = when (keyCode) {
+        android.view.KeyEvent.KEYCODE_VOLUME_UP, android.view.KeyEvent.KEYCODE_VOLUME_DOWN, android.view.KeyEvent.KEYCODE_VOLUME_MUTE -> true
+        else -> super.onKeyUp(keyCode, event)
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         when {
@@ -282,8 +300,16 @@ class MainActivity : Activity() {
         if (Updater.hasUpdate(this@MainActivity) && screen != "settings") addView(smallBtn("Mise à jour", R.drawable.ic_download, true) { st.settingsTab = "systeme"; go("settings") })
         if (screen == "home" && !edit) addView(smallBtn("Modifier", R.drawable.ic_sliders) { edit = true; sel = null; render() })
         if (edit) addView(smallBtn("Terminé", R.drawable.ic_check, true) { edit = false; sel = null; render() })
-        addView(icon(R.drawable.ic_bt, 22, Pal.muted).apply { alpha = if (sys.bluetoothOn()) 1f else .35f })
-        addView(icon(R.drawable.ic_wifi, 22, Pal.muted).apply { alpha = if (sys.online()) 1f else .35f })
+        // Bluetooth et Wi-Fi : icône barrée quand c'est coupé, mise à jour chaque seconde
+        val bt = icon(R.drawable.ic_bt, 22, Pal.muted)
+        val wifi = icon(R.drawable.ic_wifi, 22, Pal.muted)
+        addView(bt); addView(wifi)
+        var lastBt: Boolean? = null; var lastNet: Boolean? = null
+        ticks.add {
+            val b = sys.bluetoothOn(); val n = sys.online()
+            if (b != lastBt) { lastBt = b; bt.setImageResource(if (b) R.drawable.ic_bt else R.drawable.ic_bt_off); bt.setColorFilter(if (b) Pal.fg else Pal.muted) }
+            if (n != lastNet) { lastNet = n; wifi.setImageResource(if (n) R.drawable.ic_wifi else R.drawable.ic_wifi_off); wifi.setColorFilter(if (n) Pal.fg else Pal.muted) }
+        }
         val vol = dtv("${sys.volume}", 17, Pal.muted, 500, .06f)
         addView(row(6) { addView(icon(R.drawable.ic_vol, 22, Pal.muted)); addView(vol) })
         addView(icon(if (Pal.night) R.drawable.ic_moon else R.drawable.ic_sun, 22, Pal.muted))
@@ -401,14 +427,14 @@ class MainActivity : Activity() {
     private fun photoBytes(): ByteArray? = File(filesDir, "car.jpg").let { if (it.exists()) it.readBytes() else null }
     fun photoBytesPublic() = photoBytes()
 
-    /** Récapitulatif du suivi (page HTML) enregistré sur clé USB. */
+    /** Récapitulatif du suivi en PDF, enregistré sur clé USB. */
     fun saveRecap() {
-        val name = "recap-suivi-clio-" + SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE).format(Date()) + ".html"
+        val name = "recap-suivi-clio-" + SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE).format(Date()) + ".pdf"
         try {
-            startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("text/html").putExtra(Intent.EXTRA_TITLE, name), REQ_RECAP)
+            startActivityForResult(Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/pdf").putExtra(Intent.EXTRA_TITLE, name), REQ_RECAP)
         } catch (e: Exception) {
             val dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: filesDir
-            val f = File(dir, name); f.writeText(Recap.html(st))
+            val f = File(dir, name); f.writeBytes(Pdf.build(st))
             toast("Récapitulatif enregistré : " + f.path)
         }
     }
@@ -443,7 +469,7 @@ class MainActivity : Activity() {
         if (resultCode != RESULT_OK) return
         if (requestCode == REQ_PHOTO) savePhoto(uri)
         if (requestCode == REQ_RECAP) {
-            try { contentResolver.openOutputStream(uri)?.use { it.write(Recap.html(st).toByteArray(Charsets.UTF_8)) }; toast("Récapitulatif enregistré") }
+            try { contentResolver.openOutputStream(uri)?.use { it.write(Pdf.build(st)) }; toast("Récapitulatif PDF enregistré") }
             catch (e: Exception) { toast("Impossible d'enregistrer le fichier") }
         }
         if (requestCode == REQ_BACKUP) {

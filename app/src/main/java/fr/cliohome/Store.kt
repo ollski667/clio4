@@ -59,6 +59,8 @@ class Store(ctx: Context) {
         val a = JSONArray(s); return MutableList(a.length()) { a.getString(it) }
     }
 
+    /** Température du capteur de la voiture (boîtier CAN). Désactivé : la température vient de la météo. */
+    var useCarTemp get() = p.getBoolean("useCarTemp", false); set(v) = put("useCarTemp", v)
     var sideFuel get() = p.getBoolean("sideFuel", true); set(v) = put("sideFuel", v)
     var sideRadio get() = p.getBoolean("sideRadio2", false); set(v) = put("sideRadio2", v)
     var sidePark get() = p.getBoolean("sidePark", true); set(v) = put("sidePark", v)

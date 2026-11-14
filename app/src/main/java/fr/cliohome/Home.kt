@@ -180,9 +180,10 @@ fun MainActivity.widget(id: String): LinearLayout = when (id) {
         upd(); ticks.add(upd)
     }
     "temp" -> box {
-        addView(head("Extérieur", R.drawable.ic_thermo))
+        addView(head(if (st.useCarTemp) "Extérieur" else "Météo", R.drawable.ic_thermo))
         val w = sys.weather()
-        val outside = Can.outsideTemp ?: w?.temp
+        val car = if (st.useCarTemp) Can.outsideTemp else null
+        val outside = car ?: w?.temp
         addView(grow(BigText(context).apply { maxSize = 96f; text = if (outside != null) "$outside°" else "—" }))
         val online = sys.online()
         addView(col(4) {
@@ -191,7 +192,7 @@ fun MainActivity.widget(id: String): LinearLayout = when (id) {
             } else if (w != null) {
                 addView(tv("Météo de ${SimpleDateFormat("HH:mm", Locale.FRANCE).format(Date(w.at))} · hors ligne", 15, Pal.muted, 400, 1))
             } else addView(tv("Prévisions météo : hors ligne", 15, Pal.muted, 400, 1))
-            if (Can.outsideTemp == null && outside != null) addView(tv("Mesure météo (capteur à relier)", 13.5, Pal.muted, 400, 1))
+            if (st.useCarTemp && car == null && outside != null) addView(tv("Capteur de la voiture sans réponse : météo affichée", 13.5, Pal.muted, 400, 1))
         })
     }
     "maint" -> box {
@@ -212,14 +213,14 @@ fun MainActivity.widget(id: String): LinearLayout = when (id) {
     "park" -> parkWidget()
     "fuel" -> box {
         val online = sys.online()
-        addView(head(Sys.fuelName(st.fuelType), R.drawable.ic_fuel, if (online) null else tag("hors ligne")))
+        addView(head(Sys.fuelName(st.fuelType), R.drawable.ic_fuel))
         val best = sys.stations().minByOrNull { it.price }
         if (best == null) {
             addView(grow(tv(if (online) "Recherche des stations proches… (GPS nécessaire)" else "Pas encore de prix : il faut Internet une première fois.", 17, Pal.muted).apply { gravity = Gravity.CENTER_VERTICAL }))
         } else {
             addView(grow(col(6) {
                 gravity = Gravity.CENTER_VERTICAL
-                addView(tv(if (online) "Le moins cher" else "Derniers prix connus", 17, Pal.muted, 400, 1))
+                addView(tv(if (online) "Le moins cher" else "Derniers prix · hors ligne", 17, if (online) Pal.muted else Pal.warn, 400, 1))
                 addView(BigText(context).apply { maxSize = 64f; text = euro(best.price, 3); unit = "€/L" }, lp(MATCH, px(68)))
                 addView(tv("Plein ${st.tank} L : " + euro(best.price * st.tank, 2) + " €", 15, Pal.muted, 400, 1))
             }))

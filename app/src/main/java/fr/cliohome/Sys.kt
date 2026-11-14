@@ -78,8 +78,12 @@ class Sys(private val ctx: Context, private val st: Store) {
     private val audio = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     val volume get() = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
     val volumeMax get() = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-    fun volumeStep(dir: Int) = audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-        if (dir > 0) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER, 0)
+    /** dir : +1 monter, -1 baisser, 0 couper / remettre le son. showUi : affiche l'indicateur de volume d'Android. */
+    fun volumeStep(dir: Int, showUi: Boolean = false) = try {
+        audio.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+            when { dir > 0 -> AudioManager.ADJUST_RAISE; dir < 0 -> AudioManager.ADJUST_LOWER; else -> AudioManager.ADJUST_TOGGLE_MUTE },
+            if (showUi) AudioManager.FLAG_SHOW_UI else 0)
+    } catch (e: Exception) {}
 
     // ---------- Réseau / Bluetooth ----------
     fun online(): Boolean = try {

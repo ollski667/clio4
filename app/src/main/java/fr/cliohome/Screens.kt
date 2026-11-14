@@ -401,6 +401,7 @@ private val STABS = listOf(
     Triple("affichage", "Affichage", R.drawable.ic_sliders),
     Triple("accueil", "Accueil", R.drawable.ic_home),
     Triple("position", "Position et GPS", R.drawable.ic_pin),
+    Triple("capteurs", "Température", R.drawable.ic_thermo),
     Triple("carplay", "CarPlay et applis", R.drawable.ic_carplay),
     Triple("barre", "Barre latérale", R.drawable.ic_grid),
     Triple("suivi", "Suivi et carburant", R.drawable.ic_wrench),
@@ -528,6 +529,10 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
             blk("Applis liées", "Détectées automatiquement. Touchez pour en choisir une autre.",
                 chooser("CarPlay", sys.carplayApp()) { st.cpPkg = it }, line(), chooser("Radio", sys.radioApp()) { st.radioPkg = it }),
         )
+        "capteurs" -> listOf(
+            blk("Capteur de température de la voiture", "Désactivé : la température vient de la météo (Internet). Activé : Clio Home essaie de lire le capteur extérieur de la Clio via le boîtier CAN, et prend la météo si le capteur ne répond pas.",
+                toggleRow("Utiliser le capteur de la voiture", st.useCarTemp) { st.useCarTemp = it }),
+        )
         "barre" -> listOf(
             blk("Boutons affichés", "CarPlay, Accueil, Suivi et Applis restent toujours visibles.",
                 toggleRow("Carburant", st.sideFuel) { st.sideFuel = it },
@@ -539,7 +544,7 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
             blk("Volume du plein", "Pour le calcul du prix d'un plein.", seg(listOf("40" to "40 L", "45" to "45 L", "50" to "50 L"), st.tank.toString()) { st.tank = it.toInt(); render() }),
             blk("Historique et récapitulatif", "Exporter les relevés et entretiens, ou envoyer un récapitulatif au téléphone par Wi-Fi.", row(10) {
                 addView(btn("Exporter (CSV)", R.drawable.ic_download) { exportCsv() })
-                addView(btn("Récapitulatif (clé USB)", R.drawable.ic_download) { saveRecap() })
+                addView(btn("Récapitulatif PDF (clé USB)", R.drawable.ic_download) { saveRecap() })
             }, row { addView(btn("Envoyer au téléphone", R.drawable.ic_wifi, Btn.ACCENT) { go("share") }) }),
         )
         "systeme" -> listOf(
@@ -615,4 +620,4 @@ fun MainActivity.settingsScreen(compact: Boolean): View {
     }
 }
 
-object BuildInfo { const val version = "0.7.1" }
+object BuildInfo { const val version = "0.8" }

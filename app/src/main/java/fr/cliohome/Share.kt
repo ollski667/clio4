@@ -69,6 +69,14 @@ object Share {
                 while (true) { val l = r.readLine() ?: break; if (l.isEmpty()) break }
                 val path = first.split(" ").getOrNull(1)?.substringBefore('?') ?: "/"
                 val day = SimpleDateFormat("yyyy-MM-dd", Locale.FRANCE).format(Date())
+                // Le PDF est binaire : servi à part
+                if (path == "/recap.pdf") {
+                    val pdf = Pdf.build(act.st)
+                    val h = "HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: ${pdf.size}\r\nCache-Control: no-store\r\nConnection: close\r\n" +
+                        "Content-Disposition: inline; filename=\"recap-suivi-clio-$day.pdf\"\r\n\r\n"
+                    val o = sock.getOutputStream(); o.write(h.toByteArray(Charsets.UTF_8)); o.write(pdf); o.flush()
+                    requests++; main.post { onRequest?.invoke() }; return
+                }
                 val (type, name, body) = when (path) {
                     "/recap" -> Triple("text/html; charset=utf-8", null, Recap.html(act.st))
                     "/suivi.csv" -> Triple("text/csv; charset=utf-8", "suivi-clio-$day.csv", act.st.csv())
@@ -99,7 +107,8 @@ a{display:block;background:#fff;border:1px solid #d5dae0;border-radius:14px;padd
 a b{display:block;font-size:18px}a span{color:#5a6169;font-size:15px}a.main{background:#0a84ff;border-color:#0a84ff;color:#fff}a.main span{color:#dbeaff}
 </style></head><body><div class="w">
 <h1>${st.carName} · ${st.plate}</h1><p>Données envoyées par Clio Home depuis l'autoradio.</p>
-<a class="main" href="/recap"><b>Récapitulatif du suivi</b><span>Échéances et historique. Pour le garder : Partager → Imprimer → PDF, ou Enregistrer dans Fichiers.</span></a>
+<a class="main" href="/recap.pdf"><b>Récapitulatif (PDF)</b><span>Échéances et historique. Le PDF s'ouvre : touchez Partager pour l'enregistrer dans Fichiers ou l'envoyer.</span></a>
+<a href="/recap"><b>Voir le récapitulatif</b><span>Version page web, sans téléchargement</span></a>
 <a href="/suivi.csv"><b>Historique (tableur)</b><span>Fichier CSV pour Numbers ou Excel</span></a>
 <a href="/sauvegarde.json"><b>Sauvegarde complète</b><span>Pour restaurer les données sur l'autoradio</span></a>
 <a href="/diagnostic.txt"><b>Diagnostic</b><span>GPS et infos de la voiture, à envoyer pour le dépannage</span></a>
@@ -127,8 +136,8 @@ fun MainActivity.shareScreen(compact: Boolean): View {
             listOf(
                 "L'iPhone et l'autoradio doivent être sur le même Wi-Fi : partage de connexion de l'iPhone, ou CarPlay sans fil.",
                 "Ouvrez l'appareil photo de l'iPhone et visez le QR code.",
-                "Touchez le lien : Safari ouvre une page avec le récapitulatif du suivi, l'historique, la sauvegarde et le diagnostic.",
-                "Pour garder le récapitulatif : Partager → Imprimer → PDF, ou Enregistrer dans Fichiers.",
+                "Touchez le lien : Safari ouvre une page avec le récapitulatif PDF, l'historique, la sauvegarde et le diagnostic.",
+                "Touchez « Récapitulatif (PDF) » puis Partager pour l'enregistrer dans Fichiers ou l'envoyer.",
             ).forEachIndexed { i, t ->
                 addView(row(12) {
                     gravity = Gravity.TOP
@@ -137,7 +146,7 @@ fun MainActivity.shareScreen(compact: Boolean): View {
                 })
             }
             addView(tv("La page n'existe que tant que cet écran est ouvert. Rien ne passe par Internet.", 15, Pal.muted))
-            addView(row { addView(btn("Récapitulatif sur clé USB", R.drawable.ic_download) { saveRecap() }) })
+            addView(row { addView(btn("Récapitulatif PDF sur clé USB", R.drawable.ic_download) { saveRecap() }) })
         }), lp(MATCH, 0, 1f))
     }
     val right = card(14) {
