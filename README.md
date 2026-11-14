@@ -39,6 +39,14 @@ En local : `gradle assembleRelease` avec le SDK Android (compileSdk 34).
 La clé de signature `app/cliohome.keystore` est volontairement dans le dépôt : elle permet d'installer
 les nouvelles versions par-dessus l'ancienne sans perdre les données. Elle ne protège rien d'autre.
 
+## Publier une nouvelle version
+
+1. Augmenter `versionCode` et `versionName` dans `app/build.gradle.kts` (et `BuildInfo.version`).
+2. Ajouter une entrée en tête de `Notes.RELEASES` (`app/src/main/java/fr/cliohome/Notes.kt`) :
+   nouveautés et correctifs, affichés une fois après la mise à jour.
+3. Pousser sur `main` : GitHub construit l'APK et publie `ClioHome.apk` + `version.json`,
+   puis l'appli propose la mise à jour par Internet.
+
 ## À faire
 
 - Lire la température extérieure du boîtier CAN Raise (à tester sur la voiture).

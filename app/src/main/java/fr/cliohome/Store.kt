@@ -45,6 +45,8 @@ class Store(ctx: Context) {
     var bgNight get() = p.getInt("bgNight", 0xFF0B0D10.toInt()); set(v) = put("bgNight", v)
     var themeMode get() = p.getString("themeMode", "auto")!!; set(v) = put("themeMode", v)
     var ui get() = p.getFloat("ui", 1.15f); set(v) = put("ui", v)
+    /** Dernière version dont l'utilisateur a vu les nouveautés. */
+    var lastSeenVersion get() = p.getInt("lastSeenVersion", 0); set(v) = put("lastSeenVersion", v)
     var font get() = p.getString("font", "angular")!!; set(v) = put("font", v)
 
     // Accueil

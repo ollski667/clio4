@@ -39,6 +39,9 @@ class MainActivity : Activity() {
     var mSel: String? = null
     var logType = "km"
     var armed: String? = null
+    /** Nouveautés à afficher par-dessus l'écran (vide = rien). */
+    var whatsNew: List<Notes.Release> = emptyList()
+
     /** Résultats de la recherche de ville (Réglages → Position). */
     var citySearch: List<Sys.Place> = emptyList()
 
@@ -67,6 +70,7 @@ class MainActivity : Activity() {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 1)
         } else sys.startGps()
         immersive()
+        checkWhatsNew()
         render()
         // Ouverture automatique de CarPlay juste après le démarrage de l'autoradio
         if (st.autoCP == "boot" && SystemClock.elapsedRealtime() < 5 * 60_000L) startCarplayCountdown()
@@ -214,6 +218,22 @@ class MainActivity : Activity() {
     }
 
     // ---------- Construction de l'écran ----------
+    /** Après une mise à jour : prépare la fenêtre des nouveautés. Après une première installation : rien. */
+    private fun checkWhatsNew() {
+        val installed = Updater.installedCode(this)
+        val lastSeen = st.lastSeenVersion
+        if (installed <= lastSeen) return
+        val fresh = try {
+            @Suppress("DEPRECATION")
+            val pi = packageManager.getPackageInfo(packageName, 0)
+            lastSeen == 0 && pi.firstInstallTime == pi.lastUpdateTime
+        } catch (e: Exception) { false }
+        whatsNew = if (fresh) emptyList() else Notes.since(lastSeen, installed)
+        if (whatsNew.isEmpty()) st.lastSeenVersion = installed
+    }
+
+    fun showWhatsNew() { whatsNew = Notes.RELEASES.take(2); render() }
+
     fun go(s: String) { screen = s; edit = false; sel = null; armed = null; render() }
 
     fun render() {
@@ -255,8 +275,12 @@ class MainActivity : Activity() {
         banner = null
         if (cpCountdown > 0) showBanner()
         root.addView(frame, LinearLayout.LayoutParams(0, MATCH, 1f))
-
-        setContentView(root)
+        val top = FrameLayout(this)
+        top.addView(root, FrameLayout.LayoutParams(MATCH, MATCH))
+        if (whatsNew.isNotEmpty()) top.addView(whatsNewOverlay(whatsNew) {
+            st.lastSeenVersion = maxOf(st.lastSeenVersion, Updater.installedCode(this)); whatsNew = emptyList(); render()
+        }, FrameLayout.LayoutParams(MATCH, MATCH))
+        setContentView(top)
         runTicks()
     }
 
